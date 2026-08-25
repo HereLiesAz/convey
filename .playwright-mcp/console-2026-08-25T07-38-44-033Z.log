@@ -1,2 +1,0 @@
-[     220ms] ReferenceError: $RefreshSig$ is not defined
-    at http://localhost:8443/src/App.tsx:3:10
