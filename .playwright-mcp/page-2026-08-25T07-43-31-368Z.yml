@@ -1,0 +1,375 @@
+- generic [ref=f4e3]:
+  - navigation [ref=f4e4]:
+    - generic [ref=f4e5]:
+      - button "C CONVEY compose.conveyance" [ref=f4e6]:
+        - generic [ref=f4e7]: C
+        - generic [ref=f4e8]: CONVEY
+        - generic [ref=f4e9]: compose.conveyance
+      - generic [ref=f4e10]:
+        - button "Shapes" [ref=f4e11]
+        - button "Colors" [ref=f4e12]
+        - button "Motion" [ref=f4e13]
+        - button "Sizes" [ref=f4e14]
+        - button "Transforms" [ref=f4e15]
+        - button "Interactions" [ref=f4e16]
+        - button "Animations" [ref=f4e17]
+  - main [ref=f4e18]:
+    - generic [ref=f4e20]:
+      - paragraph [ref=f4e21]: compose.conveyance · v1.0.0 · Compose Multiplatform
+      - heading "CONVEY" [level=1] [ref=f4e22]
+      - generic [ref=f4e23]:
+        - generic [ref=f4e24]:
+          - paragraph [ref=f4e25]: A Compose Multiplatform design system where every shape, motion, color, and gesture teaches through interaction — never through instruction.
+          - paragraph [ref=f4e26]:
+            - text: Built on the Conveyance Manifesto.
+            - text: Compassionate design for Kotlin Multiplatform.
+        - generic [ref=f4e27]:
+          - generic [ref=f4e28]:
+            - text: // build.gradle.kts
+            - text: implementation"compose.conveyance:convey:1.0.0"
+          - generic [ref=f4e29]: ✓ Android · iOS · Desktop · Web
+      - generic [ref=f4e30]:
+        - generic [ref=f4e31]:
+          - generic [ref=f4e32]: "01"
+          - heading "Lead by Example" [level=3] [ref=f4e33]
+          - paragraph [ref=f4e34]: Design teaches through interaction, not instruction. Every element demonstrates its own purpose as it moves.
+        - generic [ref=f4e35]:
+          - generic [ref=f4e36]: "02"
+          - heading "Resourceful Minimalism" [level=3] [ref=f4e37]
+          - paragraph [ref=f4e38]: Nothing stands around watching. A single component transitions through multiple states — button, loader, confirmation.
+        - generic [ref=f4e39]:
+          - generic [ref=f4e40]: "03"
+          - heading "Motion is Grammar" [level=3] [ref=f4e41]
+          - paragraph [ref=f4e42]: One meaning per animation signature, applied consistently. Physics-based spring motion trains muscle memory.
+        - generic [ref=f4e43]:
+          - generic [ref=f4e44]: "04"
+          - heading "Engineer the Hero" [level=3] [ref=f4e45]
+          - paragraph [ref=f4e46]: Reserve peak expression for the product's emotional core. Every system deserves its defining moment.
+    - generic [ref=f4e47]:
+      - generic [ref=f4e48]:
+        - generic [ref=f4e49]:
+          - paragraph [ref=f4e50]: ConveyShape
+          - heading "Shape" [level=2] [ref=f4e51]
+          - paragraph [ref=f4e52]: Corner radii carry intent. Circular forms invite touch; sharp edges define structure. Radius is a signal before content speaks.
+        - generic [ref=f4e53]:
+          - generic [ref=f4e54]:
+            - generic [ref=f4e57]: ConveyShape.Large
+            - generic [ref=f4e58]:
+              - button "Circle" [ref=f4e59] [cursor=pointer]:
+                - generic [ref=f4e61]: Circle
+              - button "Squircle" [ref=f4e62] [cursor=pointer]:
+                - generic [ref=f4e64]: Squircle
+              - button "Extra Large" [ref=f4e65] [cursor=pointer]:
+                - generic [ref=f4e67]: Extra Large
+              - button "Large" [ref=f4e68] [cursor=pointer]:
+                - generic [ref=f4e70]: Large
+              - button "Medium" [ref=f4e71] [cursor=pointer]:
+                - generic [ref=f4e73]: Medium
+              - button "Small" [ref=f4e74] [cursor=pointer]:
+                - generic [ref=f4e76]: Small
+              - button "None" [ref=f4e77] [cursor=pointer]:
+                - generic [ref=f4e79]: None
+              - button "Cut" [ref=f4e80] [cursor=pointer]:
+                - generic [ref=f4e82]: Cut
+            - paragraph [ref=f4e83]: Dialogs and sheets
+          - generic [ref=f4e84]:
+            - generic [ref=f4e85]:
+              - generic [ref=f4e86]:
+                - generic [ref=f4e89]: kotlin · Compose Multiplatform
+                - button "copy" [ref=f4e90] [cursor=pointer]
+              - generic [ref=f4e91]: "object ConveyShape { // Token library — radius encodes purpose val Circle = RoundedCornerShape(percent = 50) val Squircle = RoundedCornerShape(percent = 35) val ExtraLarge = RoundedCornerShape(28.dp) val Large = RoundedCornerShape(16.dp) val Medium = RoundedCornerShape(12.dp) val Small = RoundedCornerShape(8.dp) val None = RoundedCornerShape(0.dp) val Cut = CutCornerShape(12.dp) // Animated morphing between any two shapes fun morph( from: Shape, to: Shape, progress: Float, ): Shape = MorphableShape(from, to, progress) } // Declarative morph — motion teaches the transition val shape by animateConveyShape( targetShape = ConveyShape.Circle, spec = ConveyMotion.Spring.Standard, ) Box( modifier = Modifier .background(ConveyColor.PrimaryContainer, shape) .clip(shape) .conveyInteraction(ConveyRipple.Bounded) )"
+            - generic [ref=f4e92]:
+              - paragraph [ref=f4e93]: Manifesto Rule
+              - paragraph [ref=f4e94]: "\"Point at a control never touched — if the user can say what it does, you are done.\" Shape is the first affordance. Radius communicates clickability before color, label, or icon."
+      - generic [ref=f4e95]:
+        - generic [ref=f4e96]:
+          - paragraph [ref=f4e97]: ConveyColor
+          - heading "Color" [level=2] [ref=f4e98]
+          - paragraph [ref=f4e99]: Dynamic color implicitly prioritizes. Primary-secondary-tertiary contrast directs attention without literal arrows or bold labels.
+        - generic [ref=f4e100]:
+          - generic [ref=f4e101]:
+            - generic [ref=f4e102]:
+              - paragraph [ref=f4e103]: Primary
+              - generic [ref=f4e104]:
+                - generic [ref=f4e105]:
+                  - paragraph [ref=f4e106]: ConveyColor.Primary
+                  - paragraph [ref=f4e107]: "#7B56F8"
+                - generic [ref=f4e108]:
+                  - paragraph [ref=f4e109]: ConveyColor.OnPrimary
+                  - paragraph [ref=f4e110]: "#FFFFFF"
+                - generic [ref=f4e111]:
+                  - paragraph [ref=f4e112]: ConveyColor.PrimaryContainer
+                  - paragraph [ref=f4e113]: "#1B1050"
+                - generic [ref=f4e114]:
+                  - paragraph [ref=f4e115]: ConveyColor.OnPrimaryContainer
+                  - paragraph [ref=f4e116]: "#C4AAFF"
+            - generic [ref=f4e117]:
+              - paragraph [ref=f4e118]: Secondary
+              - generic [ref=f4e119]:
+                - generic [ref=f4e120]:
+                  - paragraph [ref=f4e121]: ConveyColor.Secondary
+                  - paragraph [ref=f4e122]: "#00CBA9"
+                - generic [ref=f4e123]:
+                  - paragraph [ref=f4e124]: ConveyColor.OnSecondary
+                  - paragraph [ref=f4e125]: "#002820"
+                - generic [ref=f4e126]:
+                  - paragraph [ref=f4e127]: ConveyColor.SecondaryContainer
+                  - paragraph [ref=f4e128]: "#003D33"
+                - generic [ref=f4e129]:
+                  - paragraph [ref=f4e130]: ConveyColor.OnSecondaryContainer
+                  - paragraph [ref=f4e131]: "#6DF5D4"
+            - generic [ref=f4e132]:
+              - paragraph [ref=f4e133]: Tertiary
+              - generic [ref=f4e134]:
+                - generic [ref=f4e135]:
+                  - paragraph [ref=f4e136]: ConveyColor.Tertiary
+                  - paragraph [ref=f4e137]: "#FF8B5E"
+                - generic [ref=f4e138]:
+                  - paragraph [ref=f4e139]: ConveyColor.TertiaryContainer
+                  - paragraph [ref=f4e140]: "#4A1800"
+            - generic [ref=f4e141]:
+              - paragraph [ref=f4e142]: Semantic
+              - generic [ref=f4e143]:
+                - generic [ref=f4e144]:
+                  - paragraph [ref=f4e145]: ConveyColor.Error
+                  - paragraph [ref=f4e146]: "#FF4D6A"
+                - generic [ref=f4e147]:
+                  - paragraph [ref=f4e148]: ConveyColor.Warning
+                  - paragraph [ref=f4e149]: "#FFAD42"
+                - generic [ref=f4e150]:
+                  - paragraph [ref=f4e151]: ConveyColor.Success
+                  - paragraph [ref=f4e152]: "#34E89E"
+            - generic [ref=f4e153]:
+              - paragraph [ref=f4e154]: Surface
+              - generic [ref=f4e155]:
+                - generic [ref=f4e156]:
+                  - paragraph [ref=f4e157]: ConveyColor.Surface
+                  - paragraph [ref=f4e158]: "#04040C"
+                - generic [ref=f4e159]:
+                  - paragraph [ref=f4e160]: ConveyColor.SurfaceContainer
+                  - paragraph [ref=f4e161]: "#0D0D22"
+                - generic [ref=f4e162]:
+                  - paragraph [ref=f4e163]: ConveyColor.OnSurface
+                  - paragraph [ref=f4e164]: "#ECEDF5"
+                - generic [ref=f4e165]:
+                  - paragraph [ref=f4e166]: ConveyColor.OnSurfaceMuted
+                  - paragraph [ref=f4e167]: "#9899BC"
+          - generic [ref=f4e168]:
+            - generic [ref=f4e169]:
+              - generic [ref=f4e170]:
+                - generic [ref=f4e173]: kotlin · Compose Multiplatform
+                - button "copy" [ref=f4e174] [cursor=pointer]
+              - generic [ref=f4e175]: "object ConveyColor { // Primary role hierarchy val Primary = Color(0xFF7B56F8) val OnPrimary = Color(0xFFFFFFFF) val PrimaryContainer = Color(0xFF1B1050) val OnPrimaryContainer = Color(0xFFC4AAFF) // Secondary — complementary contrast val Secondary = Color(0xFF00CBA9) val OnSecondary = Color(0xFF002820) val SecondaryContainer = Color(0xFF003D33) val OnSecondaryContainer = Color(0xFF6DF5D4) // Tertiary — accent for hero moments only val Tertiary = Color(0xFFFF8B5E) val TertiaryContainer = Color(0xFF4A1800) // Semantic states val Error = Color(0xFFFF4D6A) val Warning = Color(0xFFFFAD42) val Success = Color(0xFF34E89E) // Surface system val Surface = Color(0xFF04040C) val SurfaceContainer = Color(0xFF0D0D22) val OnSurface = Color(0xFFECEDF5) val OnSurfaceMuted = Color(0xFF9899BC) } // Usage: role-based, not value-based Button( colors = ButtonDefaults.buttonColors( containerColor = ConveyColor.Primary, contentColor = ConveyColor.OnPrimary, ) )"
+            - generic [ref=f4e176]:
+              - paragraph [ref=f4e177]: Color Roles in Context
+              - generic [ref=f4e178]:
+                - generic [ref=f4e179]:
+                  - generic [ref=f4e180]: Card Title
+                  - generic [ref=f4e181]: OnSurfaceMuted
+                - generic [ref=f4e185]: Primary
+                - generic [ref=f4e186]:
+                  - button "Primary" [ref=f4e187]
+                  - button "Secondary" [ref=f4e188]
+                  - button "Tertiary" [ref=f4e189]
+      - generic [ref=f4e190]:
+        - generic [ref=f4e191]:
+          - paragraph [ref=f4e192]: ConveyMotion
+          - heading "Motion" [level=2] [ref=f4e193]
+          - paragraph [ref=f4e194]: Motion is grammar. One animation signature carries one meaning. Physics-based springs train muscle memory through repetition.
+        - generic [ref=f4e195]:
+          - generic [ref=f4e196] [cursor=pointer]:
+            - paragraph [ref=f4e200]: ConveySpring.Snappy
+            - paragraph [ref=f4e201]: Snappy
+            - generic [ref=f4e202]:
+              - generic [ref=f4e203]: k=600
+              - generic [ref=f4e204]: d=35
+            - paragraph [ref=f4e205]: Immediate response, minimal overshoot. Use for pressed states and quick feedback.
+          - generic [ref=f4e206] [cursor=pointer]:
+            - paragraph [ref=f4e210]: ConveySpring.Standard
+            - paragraph [ref=f4e211]: Standard
+            - generic [ref=f4e212]:
+              - generic [ref=f4e213]: k=380
+              - generic [ref=f4e214]: d=30
+            - paragraph [ref=f4e215]: Balanced feel for most UI transitions. The default for navigation and layout shifts.
+          - generic [ref=f4e216] [cursor=pointer]:
+            - paragraph [ref=f4e220]: ConveySpring.Gentle
+            - paragraph [ref=f4e221]: Gentle
+            - generic [ref=f4e222]:
+              - generic [ref=f4e223]: k=200
+              - generic [ref=f4e224]: d=25
+            - paragraph [ref=f4e225]: Slow, deliberate motion. For revealing content and non-urgent state changes.
+          - generic [ref=f4e226] [cursor=pointer]:
+            - paragraph [ref=f4e230]: ConveySpring.Bouncy
+            - paragraph [ref=f4e231]: Bouncy
+            - generic [ref=f4e232]:
+              - generic [ref=f4e233]: k=300
+              - generic [ref=f4e234]: d=12
+            - paragraph [ref=f4e235]: Playful overshoot. Reserve for hero moments and delightful empty states.
+        - paragraph [ref=f4e236]: click any card to animate — observe how each spring teaches a different intent
+        - generic [ref=f4e238]:
+          - generic [ref=f4e239]:
+            - generic [ref=f4e240]:
+              - generic [ref=f4e243]: kotlin · Compose Multiplatform
+              - button "copy" [ref=f4e244] [cursor=pointer]
+            - generic [ref=f4e245]: "object ConveyMotion { // Spring presets — physics, not curves object Spring { val Snappy = spring<Float>(stiffness = 600f, dampingRatio = 0.72f) val Standard = spring<Float>(stiffness = 380f, dampingRatio = 0.80f) val Gentle = spring<Float>(stiffness = 200f, dampingRatio = 0.85f) val Bouncy = spring<Float>(stiffness = 300f, dampingRatio = 0.42f) } // Easing curves for tween animations object Easing { val Standard = CubicBezierEasing(0.4f, 0f, 0.2f, 1f) val Emphasized = CubicBezierEasing(0.2f, 0f, 0f, 1f) val EmphasizedDecelerate = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f) val EmphasizedAccelerate = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f) } // M3-aligned duration tokens object Duration { const val Short1 = 50; const val Short4 = 200 const val Medium1 = 250; const val Medium4 = 400 const val Long1 = 450; const val Long4 = 600 const val ExtraLong1 = 700; const val ExtraLong4 = 1000 } }"
+          - generic [ref=f4e246]:
+            - generic [ref=f4e247]:
+              - generic [ref=f4e250]: kotlin · Compose Multiplatform
+              - button "copy" [ref=f4e251] [cursor=pointer]
+            - generic [ref=f4e252]: "// Animated value with spring spec val offsetY by animateFloatAsState( targetValue = if (visible) 0f else 40f, animationSpec = ConveyMotion.Spring.Standard, ) // Shared element transitions SharedTransition { Box( modifier = Modifier .sharedElement(rememberSharedContentState(\"hero-card\")) .conveyMotion(ConveyMotion.Spring.Bouncy) ) } // Compose-native spring for lists LazyColumn { items(items, key = { it.id }) { item -> ItemCard( modifier = Modifier.animateItem( fadeInSpec = ConveyMotion.Spring.Gentle, placementSpec = ConveyMotion.Spring.Standard, ) ) } }"
+      - generic [ref=f4e253]:
+        - generic [ref=f4e254]:
+          - paragraph [ref=f4e255]: ConveySize
+          - heading "Size" [level=2] [ref=f4e256]
+          - paragraph [ref=f4e257]: A proportional scale that ensures compositional harmony. Every token is a deliberate ratio, not an arbitrary number.
+        - generic [ref=f4e258]:
+          - generic [ref=f4e259]:
+            - generic [ref=f4e261]:
+              - button "4dp" [ref=f4e262] [cursor=pointer]:
+                - generic [ref=f4e264]: 4dp
+              - button "8dp" [ref=f4e265] [cursor=pointer]:
+                - generic [ref=f4e267]: 8dp
+              - button "16dp" [ref=f4e268] [cursor=pointer]:
+                - generic [ref=f4e270]: 16dp
+              - button "24dp" [ref=f4e271] [cursor=pointer]:
+                - generic [ref=f4e273]: 24dp
+              - button "32dp" [ref=f4e274] [cursor=pointer]:
+                - generic [ref=f4e276]: 32dp
+              - button "48dp" [ref=f4e277] [cursor=pointer]:
+                - generic [ref=f4e279]: 48dp
+              - button "64dp" [ref=f4e280] [cursor=pointer]:
+                - generic [ref=f4e282]: 64dp
+              - button "96dp" [ref=f4e283] [cursor=pointer]:
+                - generic [ref=f4e285]: 96dp
+            - generic [ref=f4e286]:
+              - paragraph [ref=f4e287]: Spacing application
+              - generic [ref=f4e288]:
+                - generic [ref=f4e289]:
+                  - generic [ref=f4e290]: ConveySize.None
+                  - generic [ref=f4e293]: 0dp
+                - generic [ref=f4e294]:
+                  - generic [ref=f4e295]: ConveySize.XSmall
+                  - generic [ref=f4e298]: 4dp
+                - generic [ref=f4e299]:
+                  - generic [ref=f4e300]: ConveySize.Small
+                  - generic [ref=f4e303]: 8dp
+                - generic [ref=f4e304]:
+                  - generic [ref=f4e305]: ConveySize.Medium
+                  - generic [ref=f4e308]: 16dp
+                - generic [ref=f4e309]:
+                  - generic [ref=f4e310]: ConveySize.Large
+                  - generic [ref=f4e313]: 24dp
+          - generic [ref=f4e315]:
+            - generic [ref=f4e316]:
+              - generic [ref=f4e319]: kotlin · Compose Multiplatform
+              - button "copy" [ref=f4e320] [cursor=pointer]
+            - generic [ref=f4e321]: "object ConveySize { // Spacing scale — compositional harmony val None = 0.dp val XSmall = 4.dp val Small = 8.dp val Medium = 16.dp val Large = 24.dp val XLarge = 32.dp val XXLarge = 48.dp val Huge = 64.dp val Hero = 96.dp // Component sizes object Component { val IconSmall = 16.dp val IconMedium = 24.dp val IconLarge = 32.dp val ButtonHeight = 40.dp val FabSize = 56.dp val FabLargeSize = 96.dp val NavigationBar = 80.dp val TopAppBar = 64.dp } // Touch target — accessibility floor val MinTouchTarget = 48.dp } // Usage Card( modifier = Modifier.padding( horizontal = ConveySize.Medium, vertical = ConveySize.Small, ) ) { Column( verticalArrangement = Arrangement.spacedBy(ConveySize.Small), modifier = Modifier.padding(ConveySize.Large), ) { /* content */ } }"
+      - generic [ref=f4e322]:
+        - generic [ref=f4e323]:
+          - paragraph [ref=f4e324]: ConveyTransform
+          - heading "Transform" [level=2] [ref=f4e325]
+          - paragraph [ref=f4e326]: Transforms reveal state through motion. Scale communicates press. Lift communicates hover. Rotation communicates direction.
+        - generic [ref=f4e327]:
+          - generic [ref=f4e328] [cursor=pointer]:
+            - paragraph [ref=f4e331]: "conveyTransform { scaleOnPress() }"
+            - paragraph [ref=f4e332]: Scale on Press
+            - paragraph [ref=f4e333]: Provides physical press feedback. Signals interactivity before the user lifts their finger.
+          - generic [ref=f4e334] [cursor=pointer]:
+            - paragraph [ref=f4e337]: "conveyTransform { liftOnHover() }"
+            - paragraph [ref=f4e338]: Lift on Hover
+            - paragraph [ref=f4e339]: Elevation increase on hover teaches the element is clickable. The shadow amplifies the affordance.
+          - generic [ref=f4e340] [cursor=pointer]:
+            - paragraph [ref=f4e343]: "conveyTransform { rotateOnHover() }"
+            - paragraph [ref=f4e344]: Rotate on Hover
+            - paragraph [ref=f4e345]: Subtle rotation confirms cursor position and adds energy to icon buttons and toggles.
+          - generic [ref=f4e346] [cursor=pointer]:
+            - paragraph [ref=f4e349]: "conveyTransform { scaleIn() }"
+            - paragraph [ref=f4e350]: Scale In Reveal
+            - paragraph [ref=f4e351]: Entering elements scale from 0.85 to 1. The growth direction communicates origin and presence.
+        - generic [ref=f4e352]:
+          - generic [ref=f4e353]:
+            - generic [ref=f4e356]: kotlin · Compose Multiplatform
+            - button "copy" [ref=f4e357] [cursor=pointer]
+          - generic [ref=f4e358]: "// Modifier DSL — compose transforms declaratively fun Modifier.conveyTransform( block: ConveyTransformScope.() -> Unit ): Modifier class ConveyTransformScope { fun scaleOnPress( scale: Float = 0.94f, spec: AnimationSpec<Float> = ConveyMotion.Spring.Snappy, ) fun liftOnHover( elevation: Dp = 8.dp, scaleUp: Float = 1.04f, spec: AnimationSpec<Float> = ConveyMotion.Spring.Standard, ) fun rotateOnHover( degrees: Float = 8f, spec: AnimationSpec<Float> = ConveyMotion.Spring.Bouncy, ) fun scaleIn( initial: Float = 0.85f, spec: AnimationSpec<Float> = ConveyMotion.Spring.Standard, ) fun fadeIn( initial: Float = 0f, spec: AnimationSpec<Float> = ConveyMotion.Spring.Gentle, ) } // Hover over cards above to see each transform Button( modifier = Modifier.conveyTransform { scaleOnPress(0.96f) liftOnHover(12.dp, scaleUp = 1.03f) }, onClick = { /* ... */ } ) { Text(\"Interact with me\") }"
+      - generic [ref=f4e359]:
+        - generic [ref=f4e360]:
+          - paragraph [ref=f4e361]: ConveyInteraction
+          - heading "Interaction" [level=2] [ref=f4e362]
+          - paragraph [ref=f4e363]: Gesture response teaches users what elements do. Ripple marks the touch point. Press scale confirms receipt. Each confirms a different layer of intent.
+        - generic [ref=f4e364]:
+          - generic [ref=f4e365] [cursor=pointer]:
+            - generic:
+              - paragraph: ConveyRipple.Bounded
+              - paragraph: tap to demonstrate
+          - generic [ref=f4e366] [cursor=pointer]:
+            - generic:
+              - paragraph: ConveyPress.Scale(0.93f)
+              - paragraph: hold to feel
+          - generic [ref=f4e367] [cursor=pointer]:
+            - generic:
+              - paragraph: ConveyLongPress(500ms)
+              - paragraph: hold 500ms
+          - generic [ref=f4e369]:
+            - paragraph [ref=f4e370]: ConveySwipeable
+            - generic [ref=f4e371]:
+              - generic [ref=f4e372]: ←
+              - text: swipe to dismiss
+              - generic [ref=f4e373]: →
+        - generic [ref=f4e374]:
+          - generic [ref=f4e375]:
+            - generic [ref=f4e378]: kotlin · Compose Multiplatform
+            - button "copy" [ref=f4e379] [cursor=pointer]
+          - generic [ref=f4e380]: "// Bounded ripple — confirms tap position fun Modifier.conveyRipple( color: Color = ConveyColor.OnSurface, bounded: Boolean = true, radius: Dp = Dp.Unspecified, ): Modifier // Press scale — immediate physical feedback fun Modifier.conveyPress( scale: Float = 0.94f, spec: AnimationSpec<Float> = ConveyMotion.Spring.Snappy, onClick: (() -> Unit)? = null, ): Modifier // Long press — progressive disclosure fun Modifier.conveyLongPress( durationMs: Long = 500L, haptic: Boolean = true, showProgress: Boolean = true, onLongPress: () -> Unit, ): Modifier // Swipe — directional intent fun Modifier.conveySwipeable( directions: Set<SwipeDirection> = SwipeDirection.Horizontal, threshold: Dp = 56.dp, onSwipe: (direction: SwipeDirection, progress: Float) -> Unit, ): Modifier // Composed: complete interactive surface Box( modifier = Modifier .conveyRipple(color = ConveyColor.Primary) .conveyPress(scale = 0.96f, onClick = { handleAction() }) .conveyLongPress { showContextMenu() } )"
+      - generic [ref=f4e381]:
+        - generic [ref=f4e382]:
+          - paragraph [ref=f4e383]: ConveyAnimation
+          - heading "Animations" [level=2] [ref=f4e384]
+          - paragraph [ref=f4e385]: The hero moments. Reserve peak expression for the emotional core of your product. A system that understands user intent proves itself here.
+        - generic [ref=f4e386]:
+          - generic [ref=f4e387]:
+            - paragraph [ref=f4e388]: Progress Button
+            - generic [ref=f4e389]:
+              - paragraph [ref=f4e390]: "ConveyStateButton: idle → loading → success"
+              - button [disabled] [ref=f4e440]:
+                - img [ref=f4e441]
+          - generic [ref=f4e394]:
+            - paragraph [ref=f4e395]: FAB Expansion
+            - generic [ref=f4e396]:
+              - paragraph [ref=f4e398]: ConveyStateButton · FAB → Sheet
+              - button [ref=f4e399]:
+                - img [ref=f4e400]
+          - generic [ref=f4e402]:
+            - paragraph [ref=f4e403]: Shape Morph
+            - generic [ref=f4e404] [cursor=pointer]:
+              - paragraph [ref=f4e405]: ConveyMorph · tap to expand
+              - heading "Conveyance Card" [level=3] [ref=f4e406]
+              - generic:
+                - paragraph [ref=f4e407]: This card demonstrates shape morphing — the corner radius softens as content expands, and the padding breathes. The element teaches its own expandability by the way it moves.
+                - generic [ref=f4e408]:
+                  - generic [ref=f4e409]: Conveyance
+                  - generic [ref=f4e410]: Kotlin
+              - generic [ref=f4e411]:
+                - img [ref=f4e413]
+                - generic [ref=f4e415]: more
+        - generic [ref=f4e416]:
+          - generic [ref=f4e417]:
+            - generic [ref=f4e420]: kotlin · Compose Multiplatform
+            - button "copy" [ref=f4e421] [cursor=pointer]
+          - generic [ref=f4e422]: "// ConveyStateButton — one element, three states @Composable fun ConveyStateButton( onClick: () -> Unit, state: ConveyButtonState = ConveyButtonState.Idle, shape: Shape = ConveyShape.Large, spec: AnimationSpec<Float> = ConveyMotion.Spring.Snappy, idleContent: @Composable () -> Unit, loadingContent: @Composable () -> Unit = { ConveySpinner() }, successContent: @Composable () -> Unit = { ConveyCheckmark() }, ) // ConveyFab — FAB that teaches its own expansion @Composable fun ConveyFab( onClick: () -> Unit, expanded: Boolean = false, expandSpec: AnimationSpec<Float> = ConveyMotion.Spring.Standard, actions: List<ConveyFabAction> = emptyList(), icon: @Composable () -> Unit, ) // ConveyMorph — shape and layout morph @Composable fun ConveyMorph( visible: Boolean, fromShape: Shape = ConveyShape.Medium, toShape: Shape = ConveyShape.Circle, spec: AnimationSpec<Float> = ConveyMotion.Spring.Standard, content: @Composable AnimatedVisibilityScope.() -> Unit, ) // ConveyReveal — circular reveal from origin @Composable fun ConveyReveal( visible: Boolean, origin: Offset = Offset.Unspecified, spec: AnimationSpec<Float> = ConveyMotion.Spring.Bouncy, content: @Composable () -> Unit, )"
+  - contentinfo [ref=f4e423]:
+    - generic [ref=f4e424]:
+      - generic [ref=f4e425]:
+        - paragraph [ref=f4e426]: CONVEY
+        - paragraph [ref=f4e427]: compose.conveyance · Compose Multiplatform
+      - generic [ref=f4e428]:
+        - generic [ref=f4e429]: ConveyShape
+        - generic [ref=f4e430]: ConveyColor
+        - generic [ref=f4e431]: ConveyMotion
+        - generic [ref=f4e432]: ConveySize
+        - generic [ref=f4e433]: ConveyTransform
+        - generic [ref=f4e434]: ConveyInteraction
+        - generic [ref=f4e435]: ConveyAnimation
+      - generic [ref=f4e436]:
+        - paragraph [ref=f4e437]: Conveyance Manifesto
+        - paragraph [ref=f4e438]: Every element earns its place.
+        - paragraph [ref=f4e439]: Motion is grammar.

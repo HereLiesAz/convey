@@ -1,0 +1,10 @@
+{
+  "description": "Create and customize a library of composable UI elements for Compose Multiplatform, enhancing design consistency and user experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

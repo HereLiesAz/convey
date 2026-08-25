@@ -1,0 +1,4 @@
+[     137ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=884aaf14:14336
+[     275ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap:0
+[     275ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800;900&display=swap:0
+[     276ms] [ERROR] Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID @ https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap:0
