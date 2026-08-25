@@ -1,13 +1,19 @@
 package compose.conveyance.foundation
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.*
+import androidx.compose.ui.unit.*
 import compose.conveyance.*
+import compose.conveyance.tokens.*
 
 /**
  * A single element that is multiple things over time.
@@ -101,9 +107,9 @@ fun <S : Any> ConveyStateHost(
             targetWidth != null && targetHeight != null ->
                 m.then(Modifier.size(animatedWidth.dp, animatedHeight.dp))
             targetWidth != null ->
-                m.then(Modifier.width(animatedWidth.dp))
+                m.then(Modifier.width(animatedWidth))
             targetHeight != null ->
-                m.then(Modifier.height(animatedHeight.dp))
+                m.then(Modifier.height(animatedHeight))
             else -> m
         }
     }
@@ -143,7 +149,6 @@ class ConveyStateScope(
 
 // ── Private utilities ────────────────────────────────────────────────────────
 
-@Composable
 private fun Modifier.width(dp: Float): Modifier =
     this.then(Modifier.then(object : LayoutModifier {
         override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
@@ -153,7 +158,6 @@ private fun Modifier.width(dp: Float): Modifier =
         }
     }))
 
-@Composable
 private fun Modifier.height(dp: Float): Modifier =
     this.then(Modifier.then(object : LayoutModifier {
         override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {

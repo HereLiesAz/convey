@@ -52,7 +52,7 @@ fun ConveyConstruct(
     content: @Composable () -> Unit,
 ) {
     val violationHandler = LocalConveyViolationHandler.current
-    val registry = LocalConveyConstructRegistry.currentOrNull
+    val registry = LocalConveyConstructRegistry.current
 
     DisposableEffect(purpose) {
         val entry = ConstructEntry(purpose = purpose, weight = weight, produces = produces)

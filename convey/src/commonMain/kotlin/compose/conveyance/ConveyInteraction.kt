@@ -50,6 +50,7 @@ fun Modifier.conveyRipple(
     meaning: String = "confirm",
 ): Modifier = composed {
     val ripples = remember { mutableStateListOf<RippleState>() }
+    val scope = rememberCoroutineScope()
     val spec = grammar[meaning]
 
     this
@@ -68,26 +69,26 @@ fun Modifier.conveyRipple(
                 onPress = { offset ->
                     val ripple = RippleState(center = offset)
                     ripples.add(ripple)
-                    val job = coroutineScope.launch {
-                        val anim = Animatable(0f)
-                        launch {
-                            anim.animateTo(1f, animationSpec = tween(600, easing = FastOutSlowInEasing))
+                    val anim = Animatable(0f)
+                    scope.launch {
+                        // The ripple plays out fully regardless of how long the press lasts --
+                        // that's what marks the point of contact, not the tap's duration.
+                        anim.animateTo(1f, animationSpec = spec) {
+                            ripple.radius = value
+                            ripple.progress = value
                         }
-                        tryAwaitRelease()
-                        ripple.progress = 1f
                         ripples.remove(ripple)
                     }
-                    awaitRelease()
+                    tryAwaitRelease()
                 }
             )
         }
 }
 
-private class RippleState(
-    val center: Offset,
-    var radius: Float = 0f,
-    var progress: Float = 0f,
-)
+private class RippleState(val center: Offset) {
+    var radius by mutableFloatStateOf(0f)
+    var progress by mutableFloatStateOf(0f)
+}
 
 // ── Press scale ───────────────────────────────────────────────────────────────
 
@@ -111,6 +112,7 @@ fun Modifier.conveyPress(
     onClick: (() -> Unit)? = null,
 ): Modifier = composed {
     val scaleAnim = remember { Animatable(1f) }
+    val scope = rememberCoroutineScope()
     val recoverySpec = grammar[meaning]
     val pressSpec: AnimationSpec<Float> = tween(80, easing = FastOutLinearInEasing)
 
@@ -119,9 +121,9 @@ fun Modifier.conveyPress(
         .pointerInput(onClick) {
             detectTapGestures(
                 onPress = {
-                    coroutineScope.launch { scaleAnim.animateTo(scale, pressSpec) }
+                    scope.launch { scaleAnim.animateTo(scale, pressSpec) }
                     val released = tryAwaitRelease()
-                    coroutineScope.launch {
+                    scope.launch {
                         scaleAnim.animateTo(1f, recoverySpec)
                     }
                     if (released) onClick?.invoke()
@@ -156,6 +158,7 @@ fun Modifier.conveyLongPress(
 ): Modifier = composed {
     var progress by remember { mutableFloatStateOf(0f) }
     var showing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     this
         .drawWithContent {
@@ -178,7 +181,7 @@ fun Modifier.conveyLongPress(
                     showing = false
                     var elapsed = 0L
                     val step = 16L
-                    val job = coroutineScope.launch {
+                    val job = scope.launch {
                         delay(initiationDelay)
                         showing = true
                         while (elapsed < durationMs) {
@@ -225,35 +228,46 @@ fun Modifier.conveySwipe(
     onSwipe: (SwipeDirection) -> Unit,
 ): Modifier = composed {
     val offset = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
     val dismissSpec = grammar["dismiss"]
+    val isHorizontal = direction == SwipeDirection.Horizontal ||
+        direction == SwipeDirection.Left || direction == SwipeDirection.Right
 
     this
         .graphicsLayer {
-            if (direction == SwipeDirection.Horizontal || direction == SwipeDirection.Left || direction == SwipeDirection.Right)
-                translationX = offset.value
-            else
-                translationY = offset.value
+            if (isHorizontal) translationX = offset.value else translationY = offset.value
         }
         .pointerInput(direction, threshold, maxDrag) {
             val maxPx = maxDrag.toPx()
-            detectHorizontalDragGestures(
-                onDragEnd = {
-                    val swipeDir = if (offset.value > 0) SwipeDirection.Right else SwipeDirection.Left
-                    if (kotlin.math.abs(offset.value) > maxPx * threshold) {
-                        onSwipe(swipeDir)
-                    }
-                    coroutineScope.launch {
-                        offset.animateTo(0f, animationSpec = dismissSpec)
-                    }
-                },
-                onHorizontalDrag = { _, delta ->
-                    coroutineScope.launch {
-                        val rawTarget = offset.value + delta
-                        val resistedTarget = rawTarget * resistance * (1f - kotlin.math.abs(offset.value) / (maxPx * 2f))
-                        offset.snapTo((offset.value + resistedTarget * (1f - resistance)).coerceIn(-maxPx, maxPx))
-                    }
+
+            fun settle(swipeDir: SwipeDirection) {
+                if (kotlin.math.abs(offset.value) > maxPx * threshold) {
+                    onSwipe(swipeDir)
                 }
-            )
+                scope.launch {
+                    offset.animateTo(0f, animationSpec = dismissSpec)
+                }
+            }
+
+            fun drag(delta: Float) {
+                scope.launch {
+                    val rawTarget = offset.value + delta
+                    val resistedTarget = rawTarget * resistance * (1f - kotlin.math.abs(offset.value) / (maxPx * 2f))
+                    offset.snapTo((offset.value + resistedTarget * (1f - resistance)).coerceIn(-maxPx, maxPx))
+                }
+            }
+
+            if (isHorizontal) {
+                detectHorizontalDragGestures(
+                    onDragEnd = { settle(if (offset.value > 0) SwipeDirection.Right else SwipeDirection.Left) },
+                    onHorizontalDrag = { _, delta -> drag(delta) },
+                )
+            } else {
+                detectVerticalDragGestures(
+                    onDragEnd = { settle(if (offset.value > 0) SwipeDirection.Down else SwipeDirection.Up) },
+                    onVerticalDrag = { _, delta -> drag(delta) },
+                )
+            }
         }
 }
 
