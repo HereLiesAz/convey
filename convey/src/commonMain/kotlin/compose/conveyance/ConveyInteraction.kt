@@ -50,15 +50,17 @@ fun Modifier.conveyRipple(
     meaning: String = "confirm",
 ): Modifier = composed {
     val ripples = remember { mutableStateListOf<RippleState>() }
+    val scope = rememberCoroutineScope()
     val spec = grammar[meaning]
 
     this
         .drawWithContent {
             drawContent()
             ripples.forEach { ripple ->
+                val progress = ripple.expand.value
                 drawCircle(
-                    color = color.copy(alpha = color.alpha * (1f - ripple.progress)),
-                    radius = ripple.radius * size.minDimension * (if (bounded) 0.9f else 1.4f),
+                    color = color.copy(alpha = color.alpha * (1f - progress)),
+                    radius = progress * size.minDimension * (if (bounded) 0.9f else 1.4f),
                     center = if (bounded) ripple.center else center,
                 )
             }
@@ -66,18 +68,13 @@ fun Modifier.conveyRipple(
         .pointerInput(Unit) {
             detectTapGestures(
                 onPress = { offset ->
-                    val ripple = RippleState(center = offset)
+                    val ripple = RippleState(center = offset, expand = Animatable(0f))
                     ripples.add(ripple)
-                    val job = coroutineScope.launch {
-                        val anim = Animatable(0f)
-                        launch {
-                            anim.animateTo(1f, animationSpec = tween(600, easing = FastOutSlowInEasing))
-                        }
-                        tryAwaitRelease()
-                        ripple.progress = 1f
-                        ripples.remove(ripple)
+                    scope.launch {
+                        ripple.expand.animateTo(1f, animationSpec = tween(600, easing = FastOutSlowInEasing))
                     }
-                    awaitRelease()
+                    tryAwaitRelease()
+                    ripples.remove(ripple)
                 }
             )
         }
@@ -85,8 +82,7 @@ fun Modifier.conveyRipple(
 
 private class RippleState(
     val center: Offset,
-    var radius: Float = 0f,
-    var progress: Float = 0f,
+    val expand: Animatable<Float, AnimationVector1D>,
 )
 
 // ── Press scale ───────────────────────────────────────────────────────────────
@@ -111,6 +107,7 @@ fun Modifier.conveyPress(
     onClick: (() -> Unit)? = null,
 ): Modifier = composed {
     val scaleAnim = remember { Animatable(1f) }
+    val scope = rememberCoroutineScope()
     val recoverySpec = grammar[meaning]
     val pressSpec: AnimationSpec<Float> = tween(80, easing = FastOutLinearInEasing)
 
@@ -119,9 +116,9 @@ fun Modifier.conveyPress(
         .pointerInput(onClick) {
             detectTapGestures(
                 onPress = {
-                    coroutineScope.launch { scaleAnim.animateTo(scale, pressSpec) }
+                    scope.launch { scaleAnim.animateTo(scale, pressSpec) }
                     val released = tryAwaitRelease()
-                    coroutineScope.launch {
+                    scope.launch {
                         scaleAnim.animateTo(1f, recoverySpec)
                     }
                     if (released) onClick?.invoke()
@@ -156,6 +153,7 @@ fun Modifier.conveyLongPress(
 ): Modifier = composed {
     var progress by remember { mutableFloatStateOf(0f) }
     var showing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     this
         .drawWithContent {
@@ -178,7 +176,7 @@ fun Modifier.conveyLongPress(
                     showing = false
                     var elapsed = 0L
                     val step = 16L
-                    val job = coroutineScope.launch {
+                    val job = scope.launch {
                         delay(initiationDelay)
                         showing = true
                         while (elapsed < durationMs) {
@@ -225,6 +223,7 @@ fun Modifier.conveySwipe(
     onSwipe: (SwipeDirection) -> Unit,
 ): Modifier = composed {
     val offset = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
     val dismissSpec = grammar["dismiss"]
 
     this
@@ -242,12 +241,12 @@ fun Modifier.conveySwipe(
                     if (kotlin.math.abs(offset.value) > maxPx * threshold) {
                         onSwipe(swipeDir)
                     }
-                    coroutineScope.launch {
+                    scope.launch {
                         offset.animateTo(0f, animationSpec = dismissSpec)
                     }
                 },
                 onHorizontalDrag = { _, delta ->
-                    coroutineScope.launch {
+                    scope.launch {
                         val rawTarget = offset.value + delta
                         val resistedTarget = rawTarget * resistance * (1f - kotlin.math.abs(offset.value) / (maxPx * 2f))
                         offset.snapTo((offset.value + resistedTarget * (1f - resistance)).coerceIn(-maxPx, maxPx))

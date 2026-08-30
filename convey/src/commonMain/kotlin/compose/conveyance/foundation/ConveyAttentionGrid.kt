@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -139,8 +140,8 @@ private fun ConveyExpandOverlay(
     // of it. `origin` is captured by the caller for a future precise shared-element (FLIP) start
     // point; until that geometry work lands, animating from full-bleed is the honest middle
     // ground: real continuous motion, not yet anchored to the exact tile bounds.
-    val animatedPadding by androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (collapsing) padding else 0.dp,
+    val animatedPaddingPx by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (collapsing) padding.value else 0f,
         animationSpec = morphSpec,
         label = "ConveyAttentionGrid.padding",
     )
@@ -156,7 +157,7 @@ private fun ConveyExpandOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(animatedPadding)
+            .padding(animatedPaddingPx.dp)
             .clip(ConveyShape.ExtraLarge)
             .background(ConveyColor.SurfaceContainerHigh),
     ) {

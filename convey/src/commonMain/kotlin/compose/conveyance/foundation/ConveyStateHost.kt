@@ -1,13 +1,22 @@
 package compose.conveyance.foundation
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import compose.conveyance.*
+import compose.conveyance.tokens.*
 
 /**
  * A single element that is multiple things over time.
@@ -99,16 +108,16 @@ fun <S : Any> ConveyStateHost(
     val sizeModifier = modifier.let { m ->
         when {
             targetWidth != null && targetHeight != null ->
-                m.then(Modifier.size(animatedWidth.dp, animatedHeight.dp))
+                m.size(animatedWidth.dp, animatedHeight.dp)
             targetWidth != null ->
-                m.then(Modifier.width(animatedWidth.dp))
+                m.width(animatedWidth.dp)
             targetHeight != null ->
-                m.then(Modifier.height(animatedHeight.dp))
+                m.height(animatedHeight.dp)
             else -> m
         }
     }
 
-    androidx.compose.foundation.layout.Box(
+    Box(
         modifier = sizeModifier
             .drawBehind { drawRect(animatedColor) }
             .clip(morphShape),
@@ -142,26 +151,6 @@ class ConveyStateScope(
 }
 
 // ── Private utilities ────────────────────────────────────────────────────────
-
-@Composable
-private fun Modifier.width(dp: Float): Modifier =
-    this.then(Modifier.then(object : LayoutModifier {
-        override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
-            val width = dp.dp.roundToPx().coerceIn(constraints.minWidth, constraints.maxWidth)
-            val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
-            return layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
-        }
-    }))
-
-@Composable
-private fun Modifier.height(dp: Float): Modifier =
-    this.then(Modifier.then(object : LayoutModifier {
-        override fun MeasureScope.measure(measurable: Measurable, constraints: Constraints): MeasureResult {
-            val height = dp.dp.roundToPx().coerceIn(constraints.minHeight, constraints.maxHeight)
-            val placeable = measurable.measure(constraints.copy(minHeight = height, maxHeight = height))
-            return layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
-        }
-    }))
 
 private fun AnimationSpec<Float>.toColorSpec(): AnimationSpec<Color> = when (this) {
     is SpringSpec<Float> -> spring(dampingRatio = dampingRatio, stiffness = stiffness)
