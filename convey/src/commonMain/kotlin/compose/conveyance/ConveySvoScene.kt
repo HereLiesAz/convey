@@ -15,6 +15,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -133,8 +134,13 @@ fun ConveySvoScene(
     val gaitBob = remember { Animatable(0f) }
     val gaitTilt = remember { Animatable(0f) }
 
-    LaunchedEffect(parts, sentence, sceneWidth) {
-        val separationPx = sceneWidth.value * 2.5f
+    // The simulation runs entirely in real device pixels, matching graphicsLayer's translationX
+    // below (also px) -- sceneWidth.value alone is the raw dp magnitude, not a pixel value, and
+    // using it directly here would put the simulated collision point and the object's actual
+    // on-screen position at different locations on any non-1.0-density screen.
+    val density = LocalDensity.current
+    LaunchedEffect(parts, sentence, sceneWidth, density) {
+        val separationPx = with(density) { sceneWidth.toPx() } * 2.5f
         val rigid = ConveyRigidBody(initialPosition = Vec2.Zero, mass = 1f, damping = 0.92f)
         val gait = ConveyGaitOscillator()
         // Mass nouns keep visibly oscillating after contact (underdamped); count nouns settle in

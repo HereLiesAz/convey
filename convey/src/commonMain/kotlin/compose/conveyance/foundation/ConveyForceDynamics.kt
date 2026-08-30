@@ -121,20 +121,25 @@ class ConveySpringMassBody(
  */
 class ConveyGaitOscillator(
     private val strideHz: Float = 2.4f,
+    private val referenceSpeedPxPerSec: Float = 260f,
 ) {
     private var phase: Float = 0f
 
+    // A real running gait's cadence, not just its bounce height, quickens with pace -- keyed to
+    // the same reference speed bobPx/tiltDegrees use for amplitude, so "intensity" means the same
+    // thing in both. Floored at 0.4x so a just-started subject doesn't step in freeze-frame.
     fun step(dtSeconds: Float, speedPxPerSec: Float) {
-        phase += strideHz * 2f * PI.toFloat() * dtSeconds
+        val cadence = strideHz * (0.4f + 0.6f * (speedPxPerSec / referenceSpeedPxPerSec).coerceIn(0f, 1f))
+        phase += cadence * 2f * PI.toFloat() * dtSeconds
     }
 
     fun bobPx(speedPxPerSec: Float, amplitudePx: Float = 4f): Float {
-        val intensity = (speedPxPerSec / 260f).coerceIn(0f, 1f)
+        val intensity = (speedPxPerSec / referenceSpeedPxPerSec).coerceIn(0f, 1f)
         return amplitudePx * intensity * kotlin.math.abs(sin(phase))
     }
 
     fun tiltDegrees(speedPxPerSec: Float, amplitudeDegrees: Float = 6f): Float {
-        val intensity = (speedPxPerSec / 260f).coerceIn(0f, 1f)
+        val intensity = (speedPxPerSec / referenceSpeedPxPerSec).coerceIn(0f, 1f)
         return amplitudeDegrees * intensity * cos(phase)
     }
 }

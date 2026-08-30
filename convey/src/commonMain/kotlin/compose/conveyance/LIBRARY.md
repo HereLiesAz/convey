@@ -144,7 +144,25 @@ compose.conveyance
 ├── ConveyVerb             — Deterministic verb → ConveyLife classification over real Princeton
 │                            WordNet + VerbNet data (ConveyVerbClass, ConveyVerbLexicon), incl.
 │                            Simplified Lesk WSD; see docs/kinetic-text-verb-classification.md
-│                            and internal/ConveyVerbData.kt (generated, do not hand-edit).
+│                            and internal/ConveyVerbData.kt (generated, do not hand-edit). Also:
+│                            ConveyVerbClass.toEventTimeline() reduces a classified verb onto a
+│                            ConveyVerbEventTimeline (approaches/contactAtEnd/continuousNoContact/
+│                            possessionTransfer) — the physical-event decomposition ConveySvoScene's
+│                            force simulator drives from; see the "Implementation status" section
+│                            of docs/Procedural Animation of Subject-Verb-Object Typography.md for
+│                            exactly which of those four booleans the simulator actually reads.
+├── ConveyNoun             — Deterministic noun → (animacy, count/mass) classification over the
+│                            same Princeton WordNet 3.0 data and Simplified Lesk WSD shape as
+│                            ConveyVerb (ConveyNounProperties, ConveyNounLexicon), backed by
+│                            internal/ConveyNounData.kt (generated, do not hand-edit). See docs/
+│                            Procedural Animation of Subject-Verb-Object Typography.md.
+├── ConveySvoScene         — Orchestrating composable: parseSvoHeuristic splits a sentence into
+│                            subject/verb/object, ConveyNounLexicon classifies the nouns,
+│                            ConveyVerbClass.toEventTimeline drives foundation/ConveyForceDynamics'
+│                            pure-Kotlin simulator to move the subject toward the object, collide,
+│                            squash/stretch, and (for an animate subject) bob/tilt in a gait
+│                            approximation. Falls back to ConveyKineticSentence when the heuristic
+│                            can't confidently split the sentence.
 ├── ConveyProvider         — ConveySystem root. Activates all enforcement.
 │
 ├── foundation/
@@ -153,6 +171,12 @@ compose.conveyance
 │   ├── ConveyConstruct    — Purpose declaration and surface auditing.
 │   ├── ConveyAttentionGrid — A grid where the attended tile IS Primary, and escalates to Hero.
 │   ├── ConveyMorphControl — A control that becomes a structurally different control on demand.
+│   ├── ConveyForceDynamics — Pure-Kotlin 2D force-dynamics primitives with no external physics
+│   │                        engine dependency: Vec2, attraction/repulsion, circle-circle collision
+│   │                        (ConveyForceDynamics), a symplectic-Euler rigid body (ConveyRigidBody),
+│   │                        a scalar damped-harmonic "soft body" wobble (ConveySpringMassBody), and
+│   │                        a periodic bob/tilt gait approximation (ConveyGaitOscillator). Built
+│   │                        for, and consumed by, ConveySvoScene.
 │   └── ConveyTopographicalLayout — Static (non-animated) procedural layout (staircase, spiral,
 │                            ring...) that picks its own shape from a sentence's own verb via
 │                            ConveyVerbLexicon.topographicalCategory.

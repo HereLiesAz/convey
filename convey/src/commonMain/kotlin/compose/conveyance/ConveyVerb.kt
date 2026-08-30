@@ -178,8 +178,12 @@ fun ConveyVerbClass.toConveyLife(): ConveyLife = when (this) {
  * A verb's action decomposed onto the `start(E)`/`during(E)`/`end(E)` timeline
  * `docs/Procedural Animation of Subject-Verb-Object Typography.md` describes (§"VerbNet and the
  * Application of Semantic Predicates") — but, per that doc's own "Implementation status" section,
- * only as much of that structure as this library can actually drive: three booleans a force
- * simulator reads directly, not a general predicate-logic representation. See
+ * only as much of that structure as this library can actually drive: four booleans, not a general
+ * predicate-logic representation. [ConveySvoScene]'s force simulator reads three of them directly
+ * ([approaches], [contactAtEnd], [continuousNoContact]) to drive translation and collision;
+ * [possessionTransfer] records [ConveyVerbClass.Possession]'s own give/take approximation but is
+ * not yet read by the simulator — [ConveySvoScene] currently animates every contact-ending verb
+ * identically, so a giving verb and a taking verb produce the same collision animation today. See
  * [ConveyVerbClass.toEventTimeline] for the one static rule table mapping each classified verb
  * to one of these.
  *
