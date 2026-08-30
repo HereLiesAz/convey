@@ -39,16 +39,22 @@
 > `ConveyKineticSentence`'s own doc comment for why (no parser; every verb classifies from its own
 > WordNet/VerbNet senses in isolation, never from its surrounding syntactic frame). Nor is the
 > report's **static topographical/concrete-poetry layout**
-> (§"Static Topographical Alignment and Concrete Poetry") **is** now implemented, as
-> [`ConveyDescentLayout`](../src/commonMain/kotlin/compose/conveyance/foundation/ConveyDescentLayout.kt)
-> plus [`ConveyVerbLexicon.isDescent`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt) —
-> a static (non-animated) staircase layout, and a real-gloss-vocabulary check (not a hypernym
-> chain: WordNet's own hypernym depth for near-synonyms like "fall" and "descend" is inconsistent
-> enough that chain-ancestor traversal missed several of the report's own examples; checking the
-> resolved sense's own gloss text for the report's named vocabulary — "downward", "descend",
-> "fall", "drop", "sink", "plunge" — catches them, since WordNet definitions themselves tend to
-> cross-reference the same handful of words for the same concept) deciding when a sentence's own
-> verb warrants it.
+> (§"Static Topographical Alignment and Concrete Poetry") **is** now implemented — generalized
+> past the report's one worked example (a downward staircase for descent verbs) into an actual
+> procedural generator:
+> [`ConveyTopographicalLayout`](../src/commonMain/kotlin/compose/conveyance/foundation/ConveyTopographicalLayout.kt)
+> picks its own shape from
+> [`ConveyVerbLexicon.topographicalCategory`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt),
+> which resolves a sentence's own verb to one of four categories (`Descent`, `Ascent`, `Scatter`,
+> `Encircle`), each via a keyword check against that verb's real resolved WordNet gloss — not a
+> hypernym chain: WordNet's own hypernym depth for near-synonyms like "fall" and "descend" is
+> inconsistent enough that chain-ancestor traversal missed several of the report's own examples;
+> gloss vocabulary catches them, since WordNet definitions themselves tend to cross-reference the
+> same handful of words for the same concept. Each category drives its own
+> [`ConveyTopographicalPath`](../src/commonMain/kotlin/compose/conveyance/foundation/ConveyTopographicalLayout.kt)
+> — a one-function interface, so a fifth shape is a fifth function, not a fork of the layout
+> engine. A sentence whose verb matches none of the four still renders — as ordinary flowing
+> text, deliberately, rather than forcing a shape that doesn't fit.
 >
 > ## Generation pipeline
 >
