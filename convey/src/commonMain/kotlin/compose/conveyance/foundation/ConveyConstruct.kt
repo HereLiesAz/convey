@@ -154,5 +154,5 @@ private fun ConveyOutcome.describe(): String = when (this) {
     is ConveyOutcome.Inert -> "inert: $reason"
 }
 
-internal val LocalConveyConstructRegistry =
+val LocalConveyConstructRegistry =
     compositionLocalOf<ConveyConstructRegistry?> { null }
