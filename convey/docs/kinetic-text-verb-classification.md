@@ -1,14 +1,57 @@
-> **Design reference — partially implemented.** This is the research grounding for
+> **Design reference — implemented on real data.** This is the research grounding for
 > [`ConveyVerb.kt`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt) and
 > [`ConveyKineticSentence`](../src/commonMain/kotlin/compose/conveyance/ConveyKineticText.kt),
-> which build the *architecture* this report argues for — verb → class → animation parameters,
-> deterministic, no ML — at the scale a hand-curated lexicon can honestly cover. What is **not**
-> implemented: Levin's ~3,100-verb taxonomy, VerbNet's predicate/timeline logic, WordNet's gloss
-> corpus, and the Simplified Lesk word-sense disambiguation stage (§"Deterministic Word Sense
-> Disambiguation and Coercion Detection") — every verb in `ConveyVerbLexicon` classifies the same
-> way regardless of surrounding context. Treat this report as the reference for *why* each
-> `ConveyVerbClass` case and its animation mapping exist, and as the scope of what a fuller
-> implementation (real VerbNet data, real WSD, global-kineticism path verbs) would still add.
+> which implement this report's architecture directly against **Princeton WordNet 3.0** (full
+> ~11,500-verb-lemma index, all senses' domains and glosses, the real `verb.exc` irregular-form
+> table) and **VerbNet 3.3** (all 325 top-level classes' member lists and `SEMANTICS`/`PRED`
+> predicates), including a real Simplified Lesk word-sense-disambiguation pass
+> (§"Deterministic Word Sense Disambiguation and Coercion Detection") scored against actual
+> WordNet glosses. The compiled data lives in
+> [`internal/ConveyVerbData.kt`](../src/commonMain/kotlin/compose/conveyance/internal/ConveyVerbData.kt)
+> (generated — do not hand-edit; see **Generation pipeline** below to regenerate it).
+>
+> What is still **not** implemented, and why: Levin's classification is subsumed here by VerbNet
+> (VerbNet is itself built on and extends Levin's classes, so there is no separate Levin layer to
+> add). The report's own Aktionsart grouping of "read, kill, find, build" as one Scalar class
+> reflects a telic/atelic (Vendler) distinction that neither WordNet's domains nor VerbNet's
+> predicates encode directly — `ConveyVerbClass.Scalar` here captures only the narrower
+> VerbNet-supported subset (verbs of degree/value change, e.g. "soar"). The report's "Volume"
+> loudness tier (shout vs. speak vs. whisper) has no signal in either resource used here, so it
+> isn't a separate case — loud verbs classify as `Communication` like any other. And genuinely:
+> VerbNet's own class judgments are sometimes broader than intuition expects (documented with a
+> real example — "yell" — on `ConveyVerbClass`'s own doc comment), and Simplified Lesk can fail
+> to disambiguate when a sentence's vocabulary doesn't literally overlap any candidate gloss, a
+> known, inherent limitation of the algorithm itself, not of this implementation.
+>
+> ## Generation pipeline
+>
+> `ConveyVerbData.kt` was produced by a Python pipeline (not checked into this repo) run against:
+> - Princeton WordNet 3.0's `index.verb`, `data.verb`, and `verb.exc`
+>   (`https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/wordnet.zip`).
+> - VerbNet 3.3's class XML corpus
+>   (`https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/verbnet3.zip`).
+>
+> Pipeline, in order: (1) parse `data.verb`/`index.verb` into synset offset → (domain, gloss) and
+> lemma → sense-ordered offset list; parse `verb.exc` into inflected → base-form pairs. (2) parse
+> every VerbNet class (recursing into `SUBCLASSES`) into its member list and the union of its
+> frames' `SEMANTICS`/`PRED` values; resolve each `MEMBER`'s `wn="lemma%2:LL:II"` sense key(s) —
+> a member can list more than one, and all are honored — to the exact WordNet synset offset they
+> name. (3) classify each VerbNet class into a `ConveyVerbClass` refinement via a priority rule
+> table: known Levin-chapter class-ID prefixes first (e.g. `cooking-45.3` → `StateMetaphor`,
+> `run-51.3` → `MannerAgent`, `break-45.1` → `Punctual`), then predicate-based fallback rules
+> (`degradation_material_integrity` → `Punctual`; `contact`+`exert_force` → `Contact`;
+> `emotional_state` → `Emotion`; `perceive` → `Perception`). (4) emit one refinement per resolved
+> WordNet offset (never per lemma — a verb's other senses are untouched) plus the full WordNet
+> domain/gloss/lemma/exception tables, as a compact tab-delimited blob, chunked into ≤40,000-byte
+> pieces (JVM's per-string-constant limit is 65,535 UTF-8 bytes) and emitted as Kotlin raw-string
+> array literals.
+>
+> `ConveyVerbLexicon.classify` builds, per WordNet sense (in frequency order), a candidate class —
+> the VerbNet-refined class for that exact sense if one was resolved, else the sense's coarse
+> WordNet domain — and returns it directly when every sense agrees. On disagreement, with context,
+> it runs Simplified Lesk (gloss/context word-overlap, excluding the query word's own inflected
+> forms so a gloss's self-referential example sentence can't spuriously "win"); without a clear
+> winner it falls back to the primary (most frequent) sense, deterministically.
 
 # **Architecting a Deterministic, Context-Aware Kinetic Typography Engine Through Lexical Semantic Verb Classification**
 

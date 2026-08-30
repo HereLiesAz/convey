@@ -96,26 +96,29 @@ private fun triggerKeyFor(triggerKey: Any, index: Int): Any =
  * Context-aware kinetic text: each word's idle motion is chosen by its own verb class, not
  * one profile applied uniformly across the whole sentence.
  *
- * This is [ConveyKineticText] driven by [ConveyVerbLexicon] — the concrete, buildable slice of
- * `docs/kinetic-text-verb-classification.md`. Every word is looked up ([ConveyVerbLexicon.classify])
- * and mapped to a [ConveyLife] profile ([ConveyVerbClass.toConveyLife]); a word the lexicon
- * doesn't recognize renders with [fallback] rather than a guessed motion. There is no word-sense
- * disambiguation — a listed verb always classifies the same way regardless of context, per the
- * lexicon's own documented limitation.
+ * This is [ConveyKineticText] driven by [ConveyVerbLexicon] — a full implementation of
+ * `docs/kinetic-text-verb-classification.md`'s architecture over real Princeton WordNet and
+ * VerbNet data, not a hand-picked word list. Every word is looked up
+ * ([ConveyVerbLexicon.classify], passing the whole sentence as its own disambiguating context)
+ * and mapped to a [ConveyLife] profile ([ConveyVerbClass.toConveyLife]); a word with no WordNet
+ * verb entry at all (slang, a typo, a proper noun) renders with [fallback] rather than a guessed
+ * motion. Genuinely polysemous verbs are disambiguated per-sentence via the Simplified Lesk
+ * algorithm — see [ConveyVerbLexicon.classify]'s own doc comment for exactly how, and for its
+ * honestly-documented limits (Lesk can fail to disambiguate when the sentence's vocabulary
+ * doesn't literally overlap any candidate sense's dictionary gloss).
  *
  * ```kotlin
  * ConveyKineticSentence(
- *     text = "The crowd laughed the clown off the stage",
+ *     text = "He told her the exciting news",
  *     style = MaterialTheme.typography.headlineSmall,
  * )
- * // "laughed" is not in the lexicon — Unclassified, renders with `fallback`. A rule-based
- * // engine that actually resolved caused-motion coercion (report §"Selectional Restrictions
- * // and Syntactic Coercion") would classify it Contact/Volume from the NP V NP PP frame; this
- * // lexicon only recognizes the verb in isolation, so it does not.
+ * // "told" resolves to Communication; "yeeted" (not in Princeton WordNet 3.0) would resolve
+ * // to Unclassified and render with `fallback` instead.
  * ```
  *
  * @param text The sentence. Split on whitespace; punctuation attached to a word (e.g. "stage.")
- *   is kept in the rendered glyphs but stripped before lexicon lookup.
+ *   is kept in the rendered glyphs but stripped before lexicon lookup. Also passed as the
+ *   disambiguating context to every word's own [ConveyVerbLexicon.classify] call.
  * @param fallback Idle motion for a word [ConveyVerbLexicon.classify] can't place —
  *   [ConveyLife.None] by default, so an unrecognized word sits still rather than fidgets.
  * @param wordSpacing Horizontal gap between words.
@@ -133,7 +136,7 @@ fun ConveyKineticSentence(
     val words = remember(text) { text.split(Regex("\\s+")).filter { it.isNotEmpty() } }
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(wordSpacing)) {
         words.forEach { word ->
-            val verbClass = remember(word) { ConveyVerbLexicon.classify(word) }
+            val verbClass = remember(word, text) { ConveyVerbLexicon.classify(word, context = text) }
             val idle = if (verbClass == ConveyVerbClass.Unclassified) fallback else verbClass.toConveyLife()
             ConveyKineticText(
                 text = word,
