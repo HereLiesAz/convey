@@ -1,8 +1,6 @@
-package compose.conveyance.internal
+package compose.conveyance
 
 import android.util.Log
-import compose.conveyance.defaultViolationHandler
-import compose.conveyance.conveyViolation
 
 internal actual fun defaultViolationHandler(): (String) -> Unit = { message ->
     if (BuildConfig.DEBUG) {
@@ -15,5 +13,3 @@ internal actual fun defaultViolationHandler(): (String) -> Unit = { message ->
 internal actual fun conveyViolation(message: String) {
     defaultViolationHandler()(message)
 }
-
-class ConveyViolationException(message: String) : IllegalStateException(message)

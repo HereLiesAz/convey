@@ -18,3 +18,10 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Gradle / Android (convey/) -- local.properties carries a machine-local SDK path, .gradle/ is
+# the build cache, and *.iml/.idea are IDE-generated.
+.gradle/
+local.properties
+*.iml
+.idea/

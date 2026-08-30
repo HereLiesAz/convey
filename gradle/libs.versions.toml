@@ -1,0 +1,23 @@
+[versions]
+# Classic Kotlin Multiplatform `androidTarget {}` + `com.android.library` toolchain -- AGP 9
+# dropped that combination for the newer `com.android.kotlin.multiplatform.library` plugin, so
+# this repo's convey/build.gradle.kts (which still uses the classic DSL) is pinned to the last
+# well-established AGP 8.x / Kotlin 2.0.x / Compose Multiplatform 1.7.x combination instead.
+agp = "8.7.3"
+kotlin = "2.0.20"
+compose = "1.7.0"
+coroutines = "1.9.0"
+compileSdk = "35"
+minSdk = "24"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

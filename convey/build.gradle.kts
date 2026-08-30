@@ -73,10 +73,23 @@ android {
         buildConfigField("Boolean", "DEBUG", "false")
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         debug {
             buildConfigField("Boolean", "DEBUG", "true")
         }
+    }
+
+    // KMP's `publishLibraryVariants("release")` (below, in the `kotlin {}` block) requires the
+    // Android library plugin to actually expose a "release" library component -- without this,
+    // com.android.library does not publish one on its own, and the build fails at configuration
+    // time with "tried to set up publishing for Android build variants that are not library
+    // variants or do not exist: release".
+    publishing {
+        singleVariant("release")
     }
 
     compileOptions {

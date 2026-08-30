@@ -6,10 +6,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 /**
  * Transform composables — the physical language of interaction.
@@ -43,7 +46,7 @@ import androidx.compose.ui.unit.dp
  */
 fun Modifier.conveyTransform(
     grammar: ConveyGrammar = ConveyGrammar.Default,
-    block: ConveyTransformScope.() -> Modifier,
+    block: @Composable ConveyTransformScope.() -> Modifier,
 ): Modifier = composed {
     val scope = ConveyTransformScope(grammar)
     this.then(scope.block())
@@ -67,6 +70,7 @@ class ConveyTransformScope(private val grammar: ConveyGrammar) {
         recoveryMeaning: String = "confirm",
     ): Modifier = composed {
         val scale = remember { Animatable(1f) }
+        val scope = rememberCoroutineScope()
         val recovery = grammar[recoveryMeaning]
         val immediate: AnimationSpec<Float> = tween(80, easing = FastOutLinearInEasing)
 
@@ -75,7 +79,7 @@ class ConveyTransformScope(private val grammar: ConveyGrammar) {
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
-                        coroutineScope.launch { scale.animateTo(pressedScale, immediate) }
+                        scope.launch { scale.animateTo(pressedScale, immediate) }
                         tryAwaitRelease()
                         scale.animateTo(1f, recovery)
                     }
@@ -101,6 +105,7 @@ class ConveyTransformScope(private val grammar: ConveyGrammar) {
     ): Modifier = composed {
         val translateY = remember { Animatable(0f) }
         val scale = remember { Animatable(1f) }
+        val scope = rememberCoroutineScope()
         val spec = grammar[meaning]
 
         this
@@ -116,12 +121,12 @@ class ConveyTransformScope(private val grammar: ConveyGrammar) {
                         val entered = event.changes.any { it.pressed }
                         val hovered = event.changes.any { !it.isOutOfBounds(size, extendedTouchPadding) }
                         if (hovered && !entered) {
-                            coroutineScope.launch {
+                            scope.launch {
                                 translateY.animateTo(-elevation.value, spec)
                                 scale.animateTo(scaleUp, spec)
                             }
                         } else {
-                            coroutineScope.launch {
+                            scope.launch {
                                 translateY.animateTo(0f, spec)
                                 scale.animateTo(1f, spec)
                             }
@@ -146,6 +151,7 @@ class ConveyTransformScope(private val grammar: ConveyGrammar) {
         meaning: String = "reveal",
     ): Modifier = composed {
         val rotation = remember { Animatable(0f) }
+        val scope = rememberCoroutineScope()
         val spec = grammar[meaning]
 
         this
@@ -155,7 +161,7 @@ class ConveyTransformScope(private val grammar: ConveyGrammar) {
                     while (true) {
                         val event = awaitPointerEvent()
                         val hovered = event.changes.any { !it.isOutOfBounds(size, extendedTouchPadding) }
-                        coroutineScope.launch {
+                        scope.launch {
                             rotation.animateTo(if (hovered) degrees else 0f, spec)
                         }
                     }
@@ -229,5 +235,3 @@ class ConveyTransformScope(private val grammar: ConveyGrammar) {
 
 private fun Modifier.graphicsLayer(block: GraphicsLayerScope.() -> Unit): Modifier =
     this.then(Modifier.graphicsLayer(block))
-
-internal data class Size(val width: Int, val height: Int)

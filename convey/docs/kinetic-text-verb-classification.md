@@ -12,16 +12,37 @@
 >
 > What is still **not** implemented, and why: Levin's classification is subsumed here by VerbNet
 > (VerbNet is itself built on and extends Levin's classes, so there is no separate Levin layer to
-> add). The report's own Aktionsart grouping of "read, kill, find, build" as one Scalar class
-> reflects a telic/atelic (Vendler) distinction that neither WordNet's domains nor VerbNet's
-> predicates encode directly — `ConveyVerbClass.Scalar` here captures only the narrower
-> VerbNet-supported subset (verbs of degree/value change, e.g. "soar"). The report's "Volume"
-> loudness tier (shout vs. speak vs. whisper) has no signal in either resource used here, so it
-> isn't a separate case — loud verbs classify as `Communication` like any other. And genuinely:
-> VerbNet's own class judgments are sometimes broader than intuition expects (documented with a
-> real example — "yell" — on `ConveyVerbClass`'s own doc comment), and Simplified Lesk can fail
-> to disambiguate when a sentence's vocabulary doesn't literally overlap any candidate gloss, a
-> known, inherent limitation of the algorithm itself, not of this implementation.
+> add). **FrameNet** (§"FrameNet: Conceptual Structures versus Syntactic Alternations") is not
+> used at all — no FrameNet data was fetched or parsed. The report's own worked FrameNet example
+> (grouping bake/boil/fry/roast/simmer under one `Apply_heat` frame) is reproduced here, but by
+> coincidence of VerbNet's own class boundaries: VerbNet's `cooking-45.3` class happens to group
+> exactly those verbs behind `apply_heat`/`cooked` predicates, so `StateMetaphor` gets the right
+> answer for the right *example* without the right *mechanism* — a real FrameNet layer would need
+> its own dataset this implementation doesn't have. The report's own Aktionsart grouping of
+> "read, kill, find, build" as one Scalar class reflects a telic/atelic (Vendler) distinction that
+> neither WordNet's domains nor VerbNet's predicates encode directly — `ConveyVerbClass.Scalar`
+> here captures only the narrower VerbNet-supported subset (verbs of degree/value change, e.g.
+> "soar"). The report's "Volume" loudness tier (shout vs. speak vs. whisper) has no signal in
+> either resource used here, so it isn't a separate case — loud verbs classify as `Communication`
+> like any other. **VerbNet's event-timeline / GL-VerbNet subevent modeling**
+> (§"Event Timeline Modeling and Subevent Sequences via VerbNet", §"Generative Lexicon (GL-VerbNet)
+> State Tracking") is not implemented either: this pipeline reads a VerbNet class's `PRED` values
+> only as a flat *set*, to pick one static `ConveyVerbClass`, and never touches the report's
+> tripartite preparatory/culmination/consequent event structure or GL-VerbNet's precondition/
+> postcondition state changes — there is no keyframe-timeline layer here, only a single discrete
+> classification per sense. And genuinely: VerbNet's own class judgments are sometimes broader
+> than intuition expects (documented with a real example — "yell" — on `ConveyVerbClass`'s own
+> doc comment), and Simplified Lesk can fail to disambiguate when a sentence's vocabulary doesn't
+> literally overlap any candidate gloss, a known, inherent limitation of the algorithm itself, not
+> of this implementation. Nor is **selectional-restriction-based syntactic coercion**
+> (§"Selectional Restrictions and Syntactic Coercion") implemented — see
+> `ConveyKineticSentence`'s own doc comment for why (no parser; every verb classifies from its own
+> WordNet/VerbNet senses in isolation, never from its surrounding syntactic frame). Nor is the
+> report's **static topographical/concrete-poetry layout**
+> (§"Static Topographical Alignment and Concrete Poetry") — no composable here lays out a sentence
+> as a descending staircase for descent verbs; that would need real hypernym-chain data (WordNet's
+> `@`/`~` pointers) this pipeline doesn't currently extract, on top of a new, purely-static
+> (non-animated) layout composable.
 >
 > ## Generation pipeline
 >

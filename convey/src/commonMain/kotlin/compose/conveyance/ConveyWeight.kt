@@ -141,3 +141,6 @@ internal val LocalConveyWeightRegistry = staticCompositionLocalOf<ConveyWeightRe
 // ── Internal ──────────────────────────────────────────────────────────────────
 
 internal expect fun conveyViolation(message: String)
+
+/** Thrown by debug-build violation handlers (see [conveyViolation], [defaultViolationHandler]). */
+internal class ConveyViolationException(message: String) : IllegalStateException(message)
