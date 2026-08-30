@@ -139,6 +139,9 @@ compose.conveyance
 ├── ConveyTransform        — Scale, lift, rotate, slide — with grammar-driven specs.
 ├── ConveyLife             — Continuous idle motion for chrome that reports "alive now."
 ├── ConveyKineticText      — Text as a composable, not a label: per-glyph life and burst.
+│                            (also: ConveyKineticSentence — per-word motion from ConveyVerbClass)
+├── ConveyVerb             — Deterministic verb → ConveyLife classification (ConveyVerbClass,
+│                            ConveyVerbLexicon); see docs/kinetic-text-verb-classification.md.
 ├── ConveyProvider         — ConveySystem root. Activates all enforcement.
 │
 ├── foundation/

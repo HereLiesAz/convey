@@ -1,11 +1,14 @@
 package compose.conveyance
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * Text is a composable, not a label.
@@ -88,3 +91,57 @@ fun ConveyKineticText(
  */
 private fun triggerKeyFor(triggerKey: Any, index: Int): Any =
     if (triggerKey == 0 || triggerKey == false) triggerKey else "$triggerKey#$index"
+
+/**
+ * Context-aware kinetic text: each word's idle motion is chosen by its own verb class, not
+ * one profile applied uniformly across the whole sentence.
+ *
+ * This is [ConveyKineticText] driven by [ConveyVerbLexicon] — the concrete, buildable slice of
+ * `docs/kinetic-text-verb-classification.md`. Every word is looked up ([ConveyVerbLexicon.classify])
+ * and mapped to a [ConveyLife] profile ([ConveyVerbClass.toConveyLife]); a word the lexicon
+ * doesn't recognize renders with [fallback] rather than a guessed motion. There is no word-sense
+ * disambiguation — a listed verb always classifies the same way regardless of context, per the
+ * lexicon's own documented limitation.
+ *
+ * ```kotlin
+ * ConveyKineticSentence(
+ *     text = "The crowd laughed the clown off the stage",
+ *     style = MaterialTheme.typography.headlineSmall,
+ * )
+ * // "laughed" is not in the lexicon — Unclassified, renders with `fallback`. A rule-based
+ * // engine that actually resolved caused-motion coercion (report §"Selectional Restrictions
+ * // and Syntactic Coercion") would classify it Contact/Volume from the NP V NP PP frame; this
+ * // lexicon only recognizes the verb in isolation, so it does not.
+ * ```
+ *
+ * @param text The sentence. Split on whitespace; punctuation attached to a word (e.g. "stage.")
+ *   is kept in the rendered glyphs but stripped before lexicon lookup.
+ * @param fallback Idle motion for a word [ConveyVerbLexicon.classify] can't place —
+ *   [ConveyLife.None] by default, so an unrecognized word sits still rather than fidgets.
+ * @param wordSpacing Horizontal gap between words.
+ */
+@Composable
+fun ConveyKineticSentence(
+    text: String,
+    staggerMs: Long = 90L,
+    wordSpacing: Dp = 6.dp,
+    fallback: ConveyLife = ConveyLife.None,
+    grammar: ConveyGrammar = LocalConveyGrammar.current,
+    style: TextStyle = TextStyle.Default,
+    modifier: Modifier = Modifier,
+) {
+    val words = remember(text) { text.split(Regex("\\s+")).filter { it.isNotEmpty() } }
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(wordSpacing)) {
+        words.forEach { word ->
+            val verbClass = remember(word) { ConveyVerbLexicon.classify(word) }
+            val idle = if (verbClass == ConveyVerbClass.Unclassified) fallback else verbClass.toConveyLife()
+            ConveyKineticText(
+                text = word,
+                idle = idle,
+                staggerMs = staggerMs,
+                grammar = grammar,
+                style = style,
+            )
+        }
+    }
+}

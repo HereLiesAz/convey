@@ -1,11 +1,14 @@
-> **Design reference, not yet implemented.** This is research grounding for a future
-> content-aware extension of [`ConveyKineticText`](../src/commonMain/kotlin/compose/conveyance/ConveyKineticText.kt)
-> and [`ConveyLife`](../src/commonMain/kotlin/compose/conveyance/ConveyLife.kt): today those
-> composables take an explicit [`ConveyLife`](../src/commonMain/kotlin/compose/conveyance/ConveyLife.kt)
-> profile chosen by the caller. The engine sketched here would let a verb in the displayed text
-> *choose* that profile deterministically — no ML, a lookup through Levin/VerbNet/WordNet classes
-> instead. Kept as a docs-only reference until that lookup layer is actually built; nothing in
-> `convey`'s source depends on it yet.
+> **Design reference — partially implemented.** This is the research grounding for
+> [`ConveyVerb.kt`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt) and
+> [`ConveyKineticSentence`](../src/commonMain/kotlin/compose/conveyance/ConveyKineticText.kt),
+> which build the *architecture* this report argues for — verb → class → animation parameters,
+> deterministic, no ML — at the scale a hand-curated lexicon can honestly cover. What is **not**
+> implemented: Levin's ~3,100-verb taxonomy, VerbNet's predicate/timeline logic, WordNet's gloss
+> corpus, and the Simplified Lesk word-sense disambiguation stage (§"Deterministic Word Sense
+> Disambiguation and Coercion Detection") — every verb in `ConveyVerbLexicon` classifies the same
+> way regardless of surrounding context. Treat this report as the reference for *why* each
+> `ConveyVerbClass` case and its animation mapping exist, and as the scope of what a fuller
+> implementation (real VerbNet data, real WSD, global-kineticism path verbs) would still add.
 
 # **Architecting a Deterministic, Context-Aware Kinetic Typography Engine Through Lexical Semantic Verb Classification**
 
