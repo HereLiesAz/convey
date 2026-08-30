@@ -175,6 +175,69 @@ fun ConveyVerbClass.toConveyLife(): ConveyLife = when (this) {
 }
 
 /**
+ * A verb's action decomposed onto the `start(E)`/`during(E)`/`end(E)` timeline
+ * `docs/Procedural Animation of Subject-Verb-Object Typography.md` describes (§"VerbNet and the
+ * Application of Semantic Predicates") — but, per that doc's own "Implementation status" section,
+ * only as much of that structure as this library can actually drive: three booleans a force
+ * simulator reads directly, not a general predicate-logic representation. See
+ * [ConveyVerbClass.toEventTimeline] for the one static rule table mapping each classified verb
+ * to one of these.
+ *
+ * @param approaches `start(E)`/`during(E)`: the subject should translate toward the object over
+ *   the course of the animation. False for verbs with no spatial component at all (e.g.
+ *   [ConveyVerbClass.Emotion], [ConveyVerbClass.Stative]) — those render with idle motion only,
+ *   never forced into a manufactured translation the verb doesn't call for.
+ * @param contactAtEnd `end(E)`: `contact(end(E), Agent, Patient)` holds — the subject's
+ *   translation should terminate in an actual collision against the object, triggering
+ *   [ConveySpringMassBody] squash-and-stretch on the object that receives it.
+ * @param continuousNoContact `during(E)` without `end(E)`: motion holds throughout, but no
+ *   contact predicate ever fires — e.g. [ConveyVerbClass.PurePath]/[ConveyVerbClass.MannerAgent]
+ *   locomotion verbs ("run", "walk") which move but don't culminate in striking anything. Mutually
+ *   exclusive with [contactAtEnd] by construction (see [ConveyVerbClass.toEventTimeline]).
+ * @param possessionTransfer [ConveyVerbClass.Possession]'s own approximation: the report's
+ *   Give-13.1 "Theme moves from Agent to Recipient" case. Since this class covers both giving and
+ *   taking without a further predicate breakdown to distinguish them (a real distinction would
+ *   need VerbNet's own `Recipient`/`Source` thematic-role data, which isn't shipped here — see
+ *   the SVO doc's "Implementation status"), it is approximated uniformly as attraction between
+ *   subject and object with contact, rather than a directional hand-off.
+ */
+data class ConveyVerbEventTimeline(
+    val approaches: Boolean,
+    val contactAtEnd: Boolean,
+    val continuousNoContact: Boolean,
+    val possessionTransfer: Boolean,
+)
+
+/**
+ * The one static rule table behind [ConveyVerbEventTimeline]: every [ConveyVerbClass] maps to
+ * exactly one timeline, deterministically, the same "one flat classification, no keyframe
+ * timeline layer" honesty [ConveyVerbLexicon.classify] itself already documents for
+ * `PRED`-to-`ConveyVerbClass` resolution. Classes with no physical interaction at all — the
+ * WordNet domains this library was never able to attach a VerbNet motion/contact predicate to,
+ * such as [ConveyVerbClass.Cognition] or [ConveyVerbClass.Weather] — resolve to the all-false
+ * timeline: no forced translation, no manufactured collision.
+ */
+fun ConveyVerbClass.toEventTimeline(): ConveyVerbEventTimeline = when (this) {
+    ConveyVerbClass.Contact, ConveyVerbClass.Punctual, ConveyVerbClass.Competition ->
+        ConveyVerbEventTimeline(approaches = true, contactAtEnd = true, continuousNoContact = false, possessionTransfer = false)
+
+    ConveyVerbClass.Motion, ConveyVerbClass.PurePath, ConveyVerbClass.MannerAgent, ConveyVerbClass.SubtleBody ->
+        ConveyVerbEventTimeline(approaches = true, contactAtEnd = false, continuousNoContact = true, possessionTransfer = false)
+
+    ConveyVerbClass.Possession ->
+        ConveyVerbEventTimeline(approaches = true, contactAtEnd = true, continuousNoContact = false, possessionTransfer = true)
+
+    ConveyVerbClass.Consumption, ConveyVerbClass.Creation, ConveyVerbClass.Change,
+    ConveyVerbClass.StateMetaphor, ConveyVerbClass.Scalar ->
+        ConveyVerbEventTimeline(approaches = true, contactAtEnd = true, continuousNoContact = false, possessionTransfer = false)
+
+    ConveyVerbClass.Body, ConveyVerbClass.Cognition, ConveyVerbClass.Communication,
+    ConveyVerbClass.Emotion, ConveyVerbClass.Perception, ConveyVerbClass.Social,
+    ConveyVerbClass.Stative, ConveyVerbClass.Weather, ConveyVerbClass.Unclassified ->
+        ConveyVerbEventTimeline(approaches = false, contactAtEnd = false, continuousNoContact = false, possessionTransfer = false)
+}
+
+/**
  * The verb → [ConveyVerbClass] classifier, backed by real Princeton WordNet 3.0 and VerbNet 3.3
  * data (see [ConveyVerbClass]'s own doc comment for the two-layer architecture, and
  * `docs/kinetic-text-verb-classification.md` for the source datasets). All data is parsed once,

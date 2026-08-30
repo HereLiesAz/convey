@@ -25,3 +25,5 @@ logs/
 local.properties
 *.iml
 .idea/
+.kotlin/
+kotlin-js-store/
