@@ -152,7 +152,9 @@ compose.conveyance
 │   ├── ConveyFab          — The morphing FAB. The canonical Conveyance hero.
 │   ├── ConveyConstruct    — Purpose declaration and surface auditing.
 │   ├── ConveyAttentionGrid — A grid where the attended tile IS Primary, and escalates to Hero.
-│   └── ConveyMorphControl — A control that becomes a structurally different control on demand.
+│   ├── ConveyMorphControl — A control that becomes a structurally different control on demand.
+│   └── ConveyDescentLayout — Static (non-animated) staircase layout for descent-verb sentences;
+│                            pair with ConveyVerbLexicon.isDescent.
 │
 └── tokens/
     ├── ConveyMotion       — Spring presets named for what they communicate.

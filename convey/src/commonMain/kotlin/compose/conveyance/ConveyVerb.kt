@@ -287,16 +287,47 @@ object ConveyVerbLexicon {
     fun classify(word: String, context: String = ""): ConveyVerbClass {
         val lemma = lemmatize(word) ?: return ConveyVerbClass.Unclassified
         val offsets = data.lemmaOffsets.getValue(lemma)
+        val offset = resolveOffset(lemma, offsets, context) ?: return ConveyVerbClass.Unclassified
+        return data.offsetOverride[offset] ?: data.synsets[offset]?.domain ?: ConveyVerbClass.Unclassified
+    }
+
+    /**
+     * Whether [word]'s resolved sense (same resolution [classify] uses — primary sense, or
+     * Simplified Lesk against [context] when the word is polysemous) reads as a verb of descent,
+     * per the small vocabulary the report itself names in
+     * §"Static Topographical Alignment and Concrete Poetry" ("fall, descend, or step down").
+     * This is a keyword check against that one resolved sense's real WordNet gloss text — not a
+     * hypernym-chain traversal (WordNet's own hypernym depth for near-synonyms like "fall" and
+     * "descend" is inconsistent enough, sitting at different distances from their shared parent,
+     * that a chain-ancestor check misses several of the report's own named examples; gloss
+     * vocabulary catches them because WordNet's definitions themselves tend to cross-reference
+     * the same handful of words for the same concept).
+     *
+     * Meant to drive [ConveyDescentLayout]: use this to decide whether a sentence's own verb
+     * warrants that static staircase layout, rather than always applying it.
+     */
+    fun isDescent(word: String, context: String = ""): Boolean {
+        val lemma = lemmatize(word) ?: return false
+        val offsets = data.lemmaOffsets.getValue(lemma)
+        val offset = resolveOffset(lemma, offsets, context) ?: return false
+        val gloss = data.synsets[offset]?.gloss ?: return false
+        val exclude = selfForms(lemma) + word.lowercase()
+        return tokenize(gloss, exclude).any { it in DESCENT_MARKERS }
+    }
+
+    private val DESCENT_MARKERS = setOf("downward", "descend", "descending", "descent", "fall", "falling", "drop", "sink", "plunge")
+
+    /** Shared sense-resolution core for [classify] and [isDescent] — see [classify]'s doc comment. */
+    private fun resolveOffset(lemma: String, offsets: List<Int>, context: String): Int? {
         val perOffsetClass = offsets.map { offset ->
             data.offsetOverride[offset] ?: data.synsets[offset]?.domain ?: ConveyVerbClass.Unclassified
         }
-        val distinct = perOffsetClass.distinct()
-        if (distinct.size == 1) return distinct[0]
-        if (context.isBlank()) return perOffsetClass[0]
+        if (perOffsetClass.distinct().size == 1) return offsets[0]
+        if (context.isBlank()) return offsets[0]
 
-        val exclude = selfForms(lemma) + word.lowercase()
+        val exclude = selfForms(lemma) + lemma
         val contextTokens = tokenize(context, exclude)
-        if (contextTokens.isEmpty()) return perOffsetClass[0]
+        if (contextTokens.isEmpty()) return offsets[0]
 
         var bestIndex = 0
         var bestScore = 0
@@ -308,7 +339,7 @@ object ConveyVerbLexicon {
                 bestIndex = i
             }
         }
-        return perOffsetClass[bestIndex]
+        return offsets[bestIndex]
     }
 
     /** The lemma's own inflected forms, so Lesk never scores a gloss's self-example as "context". */

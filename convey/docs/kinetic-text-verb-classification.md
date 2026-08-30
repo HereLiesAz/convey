@@ -39,10 +39,16 @@
 > `ConveyKineticSentence`'s own doc comment for why (no parser; every verb classifies from its own
 > WordNet/VerbNet senses in isolation, never from its surrounding syntactic frame). Nor is the
 > report's **static topographical/concrete-poetry layout**
-> (§"Static Topographical Alignment and Concrete Poetry") — no composable here lays out a sentence
-> as a descending staircase for descent verbs; that would need real hypernym-chain data (WordNet's
-> `@`/`~` pointers) this pipeline doesn't currently extract, on top of a new, purely-static
-> (non-animated) layout composable.
+> (§"Static Topographical Alignment and Concrete Poetry") **is** now implemented, as
+> [`ConveyDescentLayout`](../src/commonMain/kotlin/compose/conveyance/foundation/ConveyDescentLayout.kt)
+> plus [`ConveyVerbLexicon.isDescent`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt) —
+> a static (non-animated) staircase layout, and a real-gloss-vocabulary check (not a hypernym
+> chain: WordNet's own hypernym depth for near-synonyms like "fall" and "descend" is inconsistent
+> enough that chain-ancestor traversal missed several of the report's own examples; checking the
+> resolved sense's own gloss text for the report's named vocabulary — "downward", "descend",
+> "fall", "drop", "sink", "plunge" — catches them, since WordNet definitions themselves tend to
+> cross-reference the same handful of words for the same concept) deciding when a sentence's own
+> verb warrants it.
 >
 > ## Generation pipeline
 >
