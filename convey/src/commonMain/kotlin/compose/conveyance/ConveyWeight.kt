@@ -134,7 +134,7 @@ class ConveyWeightRegistry(
     }
 }
 
-internal val LocalConveyWeightRegistry = staticCompositionLocalOf<ConveyWeightRegistry> {
+val LocalConveyWeightRegistry = staticCompositionLocalOf<ConveyWeightRegistry> {
     ConveyWeightRegistry()
 }
 
