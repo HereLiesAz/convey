@@ -116,6 +116,14 @@ private fun triggerKeyFor(triggerKey: Any, index: Int): Any =
  * // to Unclassified and render with `fallback` instead.
  * ```
  *
+ * Not implemented: syntactic coercion (report §"Selectional Restrictions and Syntactic
+ * Coercion"). `ConveyKineticSentence` classifies each verb in isolation from real WordNet/
+ * VerbNet sense data, but has no parser, so it cannot detect a caused-motion construction (NP V
+ * NP PP) overriding a verb's own semantics — e.g. "The crowd laughed the clown off the stage"
+ * classifies "laughed" by its ordinary WordNet senses (a communication/emotion verb), not by the
+ * NP V NP PP frame's own injected CAUSE+MOTION predicates the report describes, which a real
+ * implementation of that section would need a syntactic parser to detect.
+ *
  * @param text The sentence. Split on whitespace; punctuation attached to a word (e.g. "stage.")
  *   is kept in the rendered glyphs but stripped before lexicon lookup. Also passed as the
  *   disambiguating context to every word's own [ConveyVerbLexicon.classify] call.
