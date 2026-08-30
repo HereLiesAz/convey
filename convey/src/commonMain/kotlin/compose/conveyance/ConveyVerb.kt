@@ -119,6 +119,25 @@ enum class ConveyVerbClass {
 }
 
 /**
+ * A procedural static-layout shape a sentence's own verb can suggest — see
+ * [ConveyVerbLexicon.topographicalCategory] for how a word resolves to one of these, and
+ * [compose.conveyance.foundation.ConveyTopographicalPaths] for the geometry each one drives.
+ */
+enum class ConveyTopographicalCategory {
+    /** e.g. fall, descend, sink, plunge. Report's own worked example: a downward staircase. */
+    Descent,
+
+    /** e.g. rise, climb, soar, ascend. The mirror of [Descent]: an upward staircase. */
+    Ascent,
+
+    /** e.g. scatter, disperse, spread. Words moving apart from a shared origin. */
+    Scatter,
+
+    /** e.g. circle, surround, orbit. Words arranged around a shared center. */
+    Encircle,
+}
+
+/**
  * Maps a resolved [ConveyVerbClass] to a concrete [ConveyLife] profile.
  *
  * [ConveyLife] only speaks in scale, opacity, and skew — it has no font-weight/color axis and
@@ -287,16 +306,71 @@ object ConveyVerbLexicon {
     fun classify(word: String, context: String = ""): ConveyVerbClass {
         val lemma = lemmatize(word) ?: return ConveyVerbClass.Unclassified
         val offsets = data.lemmaOffsets.getValue(lemma)
+        val offset = resolveOffset(lemma, offsets, context) ?: return ConveyVerbClass.Unclassified
+        return data.offsetOverride[offset] ?: data.synsets[offset]?.domain ?: ConveyVerbClass.Unclassified
+    }
+
+    /**
+     * The procedural static-layout category [word]'s resolved sense (same resolution [classify]
+     * uses) suggests, or null if none of the categories' vocabulary matches. Generalizes the
+     * report's own single worked example (§"Static Topographical Alignment and Concrete Poetry":
+     * "if the engine parses a verb denoting a cascading downward movement... it can trigger a
+     * static typographical alignment rule") to the same "verb's semantic path → static coordinate
+     * geometry" principle across a small set of spatially-opposed categories, rather than
+     * hardcoding descent as the only shape a sentence's own geometry can take.
+     *
+     * Each category is a keyword check against the resolved sense's real WordNet gloss text — not
+     * a hypernym-chain traversal (verified against actual WordNet data: near-synonyms like "fall"
+     * and "descend" sit at inconsistent hypernym depths from their shared parent, so chain-ancestor
+     * checks miss several of the report's own named examples; gloss vocabulary catches them
+     * because WordNet's definitions themselves tend to cross-reference the same handful of words
+     * for the same concept). See [compose.conveyance.foundation.ConveyTopographicalPaths] for the
+     * geometry each category actually drives.
+     */
+    fun topographicalCategory(word: String, context: String = ""): ConveyTopographicalCategory? {
+        val lemma = lemmatize(word) ?: return null
+        val offsets = data.lemmaOffsets.getValue(lemma)
+        val offset = resolveOffset(lemma, offsets, context) ?: return null
+        val gloss = data.synsets[offset]?.gloss ?: return null
+        // Unlike Lesk (which excludes the query word's own forms so a gloss's self-referential
+        // example can't spuriously "match" external context), the marker check here is comparing
+        // the gloss against a fixed vocabulary independent of the query word -- excluding the
+        // word's own forms would strip exactly the marker most glosses actually use (e.g.
+        // "circle"'s own primary gloss example literally says "circle the globe").
+        val tokens = tokenize(gloss, exclude = emptySet())
+        return TOPOGRAPHICAL_MARKERS.entries.firstOrNull { (_, markers) -> tokens.any { it in markers } }?.key
+    }
+
+    /** Convenience for [topographicalCategory] `== `[ConveyTopographicalCategory.Descent]. */
+    fun isDescent(word: String, context: String = ""): Boolean =
+        topographicalCategory(word, context) == ConveyTopographicalCategory.Descent
+
+    private val TOPOGRAPHICAL_MARKERS: Map<ConveyTopographicalCategory, Set<String>> = mapOf(
+        ConveyTopographicalCategory.Descent to setOf(
+            "downward", "descend", "descending", "descent", "fall", "falling", "drop", "sink", "plunge",
+        ),
+        ConveyTopographicalCategory.Ascent to setOf(
+            "upward", "ascend", "ascending", "ascent", "rise", "rising", "climb", "climbing", "soar", "mount", "mounting",
+        ),
+        ConveyTopographicalCategory.Scatter to setOf(
+            "scatter", "scattered", "scattering", "disperse", "dispersed", "dispersing", "spread", "spreading",
+        ),
+        ConveyTopographicalCategory.Encircle to setOf(
+            "circle", "encircle", "surround", "surrounding", "orbit", "orbiting", "encompass", "encompassing",
+        ),
+    )
+
+    /** Shared sense-resolution core for [classify] and [topographicalCategory] — see [classify]'s doc comment. */
+    private fun resolveOffset(lemma: String, offsets: List<Int>, context: String): Int? {
         val perOffsetClass = offsets.map { offset ->
             data.offsetOverride[offset] ?: data.synsets[offset]?.domain ?: ConveyVerbClass.Unclassified
         }
-        val distinct = perOffsetClass.distinct()
-        if (distinct.size == 1) return distinct[0]
-        if (context.isBlank()) return perOffsetClass[0]
+        if (perOffsetClass.distinct().size == 1) return offsets[0]
+        if (context.isBlank()) return offsets[0]
 
-        val exclude = selfForms(lemma) + word.lowercase()
+        val exclude = selfForms(lemma) + lemma
         val contextTokens = tokenize(context, exclude)
-        if (contextTokens.isEmpty()) return perOffsetClass[0]
+        if (contextTokens.isEmpty()) return offsets[0]
 
         var bestIndex = 0
         var bestScore = 0
@@ -308,7 +382,7 @@ object ConveyVerbLexicon {
                 bestIndex = i
             }
         }
-        return perOffsetClass[bestIndex]
+        return offsets[bestIndex]
     }
 
     /** The lemma's own inflected forms, so Lesk never scores a gloss's self-example as "context". */
@@ -333,8 +407,16 @@ object ConveyVerbLexicon {
         "into", "than", "then", "so", "not", "no", "do", "does", "did", "has", "have", "had",
     )
 
+    // Apostrophe only *inside* a letter run (contractions: "don't", "can't") -- never at a word's
+    // edge. The generated gloss data re-encodes each embedded '"' as a bare "'" (see
+    // ConveyVerbData.kt's generation pipeline), so a quoted example like "circle the globe"
+    // becomes 'circle the globe' with no space before the opening quote -- a naive [A-Za-z']+
+    // regex would swallow that leading apostrophe into the token ('circle), which then matches
+    // no real word. Anchoring the apostrophe between letters avoids that without touching the data.
+    private val WORD_PATTERN = Regex("[A-Za-z]+(?:'[A-Za-z]+)*")
+
     private fun tokenize(text: String, exclude: Set<String>): Set<String> =
-        Regex("[A-Za-z']+").findAll(text.lowercase())
+        WORD_PATTERN.findAll(text.lowercase())
             .map { it.value }
             .filter { it.length > 2 && it !in STOPWORDS && it !in exclude }
             .toSet()

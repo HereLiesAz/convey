@@ -142,7 +142,25 @@ fun ConveyKineticSentence(
     modifier: Modifier = Modifier,
 ) {
     val words = remember(text) { text.split(Regex("\\s+")).filter { it.isNotEmpty() } }
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(wordSpacing)) {
+
+    // Global kineticism (report §"Global Kineticism, Local Kineticism, and Fluid Typography"):
+    // PurePath/Scalar are *spatial-path* verb classes -- toConveyLife() maps them to
+    // ConveyLife.None deliberately, since per-glyph idle motion can't express "this sentence
+    // moved from somewhere." A sentence whose own verb resolves to either instead slides the
+    // whole line in via ConveyTransform, once, on entry -- real translation, not a metaphor for it.
+    val hasGlobalMotion = remember(text, words) {
+        words.any { word ->
+            val cls = ConveyVerbLexicon.classify(word, context = text)
+            cls == ConveyVerbClass.PurePath || cls == ConveyVerbClass.Scalar
+        }
+    }
+    val rowModifier = if (hasGlobalMotion) {
+        modifier.conveyTransform(grammar) { Modifier.slideIn(horizontal = true) }
+    } else {
+        modifier
+    }
+
+    Row(modifier = rowModifier, horizontalArrangement = Arrangement.spacedBy(wordSpacing)) {
         words.forEach { word ->
             val verbClass = remember(word, text) { ConveyVerbLexicon.classify(word, context = text) }
             val idle = if (verbClass == ConveyVerbClass.Unclassified) fallback else verbClass.toConveyLife()
