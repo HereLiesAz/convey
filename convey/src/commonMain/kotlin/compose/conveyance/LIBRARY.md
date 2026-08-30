@@ -137,12 +137,16 @@ compose.conveyance
 ├── ConveyAffordance       — Self-revealing interactivity. Teaches once, then trusts.
 ├── ConveyInteraction      — Ripple, press, long-press, swipe.
 ├── ConveyTransform        — Scale, lift, rotate, slide — with grammar-driven specs.
+├── ConveyLife             — Continuous idle motion for chrome that reports "alive now."
+├── ConveyKineticText      — Text as a composable, not a label: per-glyph life and burst.
 ├── ConveyProvider         — ConveySystem root. Activates all enforcement.
 │
 ├── foundation/
 │   ├── ConveyStateHost    — Single element across multiple states.
 │   ├── ConveyFab          — The morphing FAB. The canonical Conveyance hero.
-│   └── ConveyConstruct    — Purpose declaration and surface auditing.
+│   ├── ConveyConstruct    — Purpose declaration and surface auditing.
+│   ├── ConveyAttentionGrid — A grid where the attended tile IS Primary, and escalates to Hero.
+│   └── ConveyMorphControl — A control that becomes a structurally different control on demand.
 │
 └── tokens/
     ├── ConveyMotion       — Spring presets named for what they communicate.
