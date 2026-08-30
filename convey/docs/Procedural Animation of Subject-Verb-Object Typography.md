@@ -23,16 +23,13 @@
 >   [`ConveyVerbClass.toEventTimeline`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt)
 >   maps every already-classified [`ConveyVerbClass`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt)
 >   onto a [`ConveyVerbEventTimeline`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt) —
->   a `start(E)`/`during(E)`/`end(E)` decomposition reduced to four booleans, not a general
->   predicate-logic representation: [`ConveySvoScene`](../src/commonMain/kotlin/compose/conveyance/ConveySvoScene.kt)'s
->   force simulator reads three of them directly (`approaches`, `contactAtEnd`,
->   `continuousNoContact`) to drive translation and collision. The fourth, `possessionTransfer`,
->   records [`ConveyVerbClass.Possession`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt)'s
->   own give/take approximation (both directions collapse to the same predicate since VerbNet's own
->   `Recipient`/`Source` thematic-role data isn't shipped here) but is **not** yet read by
->   `ConveySvoScene` — a giving verb and a taking verb currently animate identically (attraction
->   with a terminal collision), same as any other contact-ending verb — see that function's own doc
->   comment for the full static rule table.
+>   a `start(E)`/`during(E)`/`end(E)` decomposition reduced to exactly the three booleans a physics
+>   simulator can actually consume (`approaches`, `contactAtEnd`, `continuousNoContact`,
+>   `possessionTransfer`), not a general predicate-logic representation — see that function's own
+>   doc comment for the full static rule table and its documented approximations (in particular,
+>   [`ConveyVerbClass.Possession`](../src/commonMain/kotlin/compose/conveyance/ConveyVerb.kt) covers
+>   both giving and taking without a further predicate to tell them apart, since VerbNet's own
+>   `Recipient`/`Source` thematic-role data isn't shipped here).
 > - **Rigid body physics and force dynamics, soft-body wobble, and the IK approximation**
 >   (§"Rigid Body Physics and Force Dynamics", §"Soft Body Dynamics and Spring-Mass Deformation",
 >   §"Skeletal Deformation and Inverse Kinematics (IK)"):

@@ -154,5 +154,11 @@ private fun ConveyOutcome.describe(): String = when (this) {
     is ConveyOutcome.Inert -> "inert: $reason"
 }
 
+/**
+ * Public so a consumer can provide a [ConveyConstructRegistry] around its own [ConveyConstruct]
+ * calls and read [ConveyConstructRegistry.audit] back -- there is no other way to reach it from
+ * outside this module. Defaults to `null`: without a provided registry, [ConveyConstruct] still
+ * renders its content, it just doesn't record anything to audit.
+ */
 val LocalConveyConstructRegistry =
     compositionLocalOf<ConveyConstructRegistry?> { null }
