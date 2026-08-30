@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -213,11 +214,16 @@ fun ConveySvoScene(
                     rotationZ = if (subjectProps?.animacy == ConveyNounAnimacy.Animate) gaitTilt.value else 0f
                 },
         )
+        // A fixed vertical band below the subject/object's travel lane -- otherwise, with no
+        // offset of its own, the verb renders stacked directly on top of the subject at Box's
+        // shared top-start origin (they only visually separate once the subject has traveled far
+        // enough right, which for a short subject/verb doesn't reliably happen at all).
         ConveyKineticText(
             text = parts.verb,
             idle = verbClass.toConveyLife(),
             grammar = grammar,
             style = style,
+            modifier = Modifier.align(Alignment.BottomStart),
         )
     }
 }
