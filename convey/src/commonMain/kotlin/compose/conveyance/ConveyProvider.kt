@@ -11,10 +11,8 @@ import androidx.compose.ui.graphics.Color
  * its presence, carry a declared motion meaning, and respect visual hierarchy.
  *
  * Without [ConveySystem], Convey composables still render — they use [ConveyGrammar.Default]
- * and skip enforcement. With [ConveySystem], the contract is active. Violations throw by
- * default -- the same fail-loud stance [ConveyGrammar] already takes for unknown meanings.
- * Pass [onViolation] if your product wants a different response (e.g. logging instead of
- * throwing in a release build).
+ * and skip enforcement. With [ConveySystem], the contract is active. Violations surface
+ * as errors in debug builds and as logged warnings in release builds.
  *
  * The system intentionally does not provide colors or typography. Those belong to your
  * product's design system. [ConveySystem] provides the behavioral contract, not the skin.
@@ -40,7 +38,7 @@ import androidx.compose.ui.graphics.Color
  * @param enforceHierarchy Whether to actively enforce [ConveyWeight] rules. Disable
  *   only during migration. Do not disable permanently.
  * @param onViolation Called when a hierarchy or grammar violation is detected.
- *   Defaults to throwing [ConveyViolationException].
+ *   Defaults to throwing in debug, logging in release.
  */
 @Composable
 fun ConveySystem(

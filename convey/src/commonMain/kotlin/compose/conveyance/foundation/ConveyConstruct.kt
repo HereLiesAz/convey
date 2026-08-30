@@ -52,7 +52,7 @@ fun ConveyConstruct(
     content: @Composable () -> Unit,
 ) {
     val violationHandler = LocalConveyViolationHandler.current
-    val registry = LocalConveyConstructRegistry.current
+    val registry = LocalConveyConstructRegistry.currentOrNull
 
     DisposableEffect(purpose) {
         val entry = ConstructEntry(purpose = purpose, weight = weight, produces = produces)
@@ -154,11 +154,5 @@ private fun ConveyOutcome.describe(): String = when (this) {
     is ConveyOutcome.Inert -> "inert: $reason"
 }
 
-/**
- * Public so a consumer can provide a [ConveyConstructRegistry] around its own [ConveyConstruct]
- * calls and read [ConveyConstructRegistry.audit] back -- there is no other way to reach it from
- * outside this module. Defaults to `null`: without a provided registry, [ConveyConstruct] still
- * renders its content, it just doesn't record anything to audit.
- */
-val LocalConveyConstructRegistry =
+internal val LocalConveyConstructRegistry =
     compositionLocalOf<ConveyConstructRegistry?> { null }

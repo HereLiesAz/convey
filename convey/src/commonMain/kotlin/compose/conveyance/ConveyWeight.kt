@@ -134,13 +134,7 @@ class ConveyWeightRegistry(
     }
 }
 
-/**
- * Public so a consumer can read [ConveyWeightRegistry.snapshot] for its own debug UI or logging --
- * LIBRARY.md's whole audit story is unreachable from outside this module otherwise. [ConveySystem]
- * is still the only thing that provides a non-default value; reading this without one just gets an
- * empty, unshared registry.
- */
-val LocalConveyWeightRegistry = staticCompositionLocalOf<ConveyWeightRegistry> {
+internal val LocalConveyWeightRegistry = staticCompositionLocalOf<ConveyWeightRegistry> {
     ConveyWeightRegistry()
 }
 
