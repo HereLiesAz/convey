@@ -21,13 +21,17 @@ kotlin {
         publishLibraryVariants("release")
     }
 
-    iosX64()
+    // iosX64 (the Intel simulator target) dropped out with this Compose Multiplatform bump --
+    // 1.12.0 doesn't publish org.jetbrains.compose.*:*-iosx64 artifacts at all (confirmed: 404 on
+    // Maven Central where iosarm64/iossimulatorarm64 both 200), consistent with the wider industry
+    // having moved off Intel Macs. iosArm64 (real device) + iosSimulatorArm64 (Apple Silicon
+    // simulator) is the modern KMP pair.
     iosArm64()
     iosSimulatorArm64()
 
     jvm("desktop")
 
-    @OptIn(org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl::class)
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
     wasmJs { browser() }
 
     sourceSets {
