@@ -1,11 +1,14 @@
 package compose.conveyance
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * Text is a composable, not a label.
@@ -88,3 +91,60 @@ fun ConveyKineticText(
  */
 private fun triggerKeyFor(triggerKey: Any, index: Int): Any =
     if (triggerKey == 0 || triggerKey == false) triggerKey else "$triggerKey#$index"
+
+/**
+ * Context-aware kinetic text: each word's idle motion is chosen by its own verb class, not
+ * one profile applied uniformly across the whole sentence.
+ *
+ * This is [ConveyKineticText] driven by [ConveyVerbLexicon] — a full implementation of
+ * `docs/kinetic-text-verb-classification.md`'s architecture over real Princeton WordNet and
+ * VerbNet data, not a hand-picked word list. Every word is looked up
+ * ([ConveyVerbLexicon.classify], passing the whole sentence as its own disambiguating context)
+ * and mapped to a [ConveyLife] profile ([ConveyVerbClass.toConveyLife]); a word with no WordNet
+ * verb entry at all (slang, a typo, a proper noun) renders with [fallback] rather than a guessed
+ * motion. Genuinely polysemous verbs are disambiguated per-sentence via the Simplified Lesk
+ * algorithm — see [ConveyVerbLexicon.classify]'s own doc comment for exactly how, and for its
+ * honestly-documented limits (Lesk can fail to disambiguate when the sentence's vocabulary
+ * doesn't literally overlap any candidate sense's dictionary gloss).
+ *
+ * ```kotlin
+ * ConveyKineticSentence(
+ *     text = "He told her the exciting news",
+ *     style = MaterialTheme.typography.headlineSmall,
+ * )
+ * // "told" resolves to Communication; "yeeted" (not in Princeton WordNet 3.0) would resolve
+ * // to Unclassified and render with `fallback` instead.
+ * ```
+ *
+ * @param text The sentence. Split on whitespace; punctuation attached to a word (e.g. "stage.")
+ *   is kept in the rendered glyphs but stripped before lexicon lookup. Also passed as the
+ *   disambiguating context to every word's own [ConveyVerbLexicon.classify] call.
+ * @param fallback Idle motion for a word [ConveyVerbLexicon.classify] can't place —
+ *   [ConveyLife.None] by default, so an unrecognized word sits still rather than fidgets.
+ * @param wordSpacing Horizontal gap between words.
+ */
+@Composable
+fun ConveyKineticSentence(
+    text: String,
+    staggerMs: Long = 90L,
+    wordSpacing: Dp = 6.dp,
+    fallback: ConveyLife = ConveyLife.None,
+    grammar: ConveyGrammar = LocalConveyGrammar.current,
+    style: TextStyle = TextStyle.Default,
+    modifier: Modifier = Modifier,
+) {
+    val words = remember(text) { text.split(Regex("\\s+")).filter { it.isNotEmpty() } }
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(wordSpacing)) {
+        words.forEach { word ->
+            val verbClass = remember(word, text) { ConveyVerbLexicon.classify(word, context = text) }
+            val idle = if (verbClass == ConveyVerbClass.Unclassified) fallback else verbClass.toConveyLife()
+            ConveyKineticText(
+                text = word,
+                idle = idle,
+                staggerMs = staggerMs,
+                grammar = grammar,
+                style = style,
+            )
+        }
+    }
+}
