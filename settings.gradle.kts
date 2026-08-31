@@ -7,6 +7,13 @@ pluginManagement {
     }
 }
 
+plugins {
+    // Compose Hot Reload needs the JetBrains Runtime (an OpenJDK fork with enhanced class
+    // redefinition) to actually reload code live; this lets Gradle auto-provision it rather than
+    // requiring a JBR already installed on the machine running `:convey:hotRunDesktop`.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 rootProject.name = "conveyance-convey"
 
 dependencyResolutionManagement {
@@ -18,3 +25,6 @@ dependencyResolutionManagement {
 }
 
 include(":convey")
+include(":dev-app")
+include(":android-dev-app")
+include(":hotswap")

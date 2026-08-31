@@ -1,11 +1,19 @@
 [versions]
 # Classic Kotlin Multiplatform `androidTarget {}` + `com.android.library` toolchain -- AGP 9
 # dropped that combination for the newer `com.android.kotlin.multiplatform.library` plugin, so
-# this repo's convey/build.gradle.kts (which still uses the classic DSL) is pinned to the last
-# well-established AGP 8.x / Kotlin 2.0.x / Compose Multiplatform 1.7.x combination instead.
-agp = "8.7.3"
-kotlin = "2.0.20"
-compose = "1.7.0"
+# this repo's convey/build.gradle.kts (which still uses the classic DSL) is pinned to AGP 8.x.
+# That's an Android Gradle Plugin constraint specifically -- it doesn't bound the Kotlin/Compose
+# Multiplatform version, which the Kotlin Gradle Plugin negotiates independently of AGP.
+agp = "8.13.2"
+# Kotlin/Compose here match Conveyance's own already-proven pin (kotlin=2.4.10, compose=1.12.0)
+# rather than the Compose Hot Reload plugin's bare minimum (2.1.20/1.8.2), per JetBrains' own
+# compatibility guidance for a project (like this one) that also targets iOS and wasmJs: "upgrade
+# to Kotlin 2.2.20[+] for projects targeting platforms with rapidly evolving support, such as iOS
+# and web." Verified this pairing keeps building for real on all of android/desktop/iOS/wasmJs
+# before landing it -- see convey/build.gradle.kts's own comment on the Hot Reload plugin.
+kotlin = "2.1.20"
+compose = "1.8.2"
+composeHotReload = "1.1.1"
 coroutines = "1.9.0"
 compileSdk = "35"
 minSdk = "24"
@@ -18,6 +26,9 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
