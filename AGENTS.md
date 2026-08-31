@@ -102,10 +102,12 @@ an empty collection's creation control sits full-size and centered, then relocat
 permanent corner and shrinks on first use), `ConveyOffer` (the framework's Act, offered —
 composes `ConveyConstruct`+`ConveyEscort`+`ConveyStateHost` into one declaration with a gate, an
 interrupt, and Invite/Progress/Success/Failure/Interrupted states; a destructive act's inverse is
-`ConveyReversal` wrapping it, not a parameter on it), and `ConveyEnter` (Law 2 continuity for
+`ConveyReversal` wrapping it, not a parameter on it), `ConveyEnter` (Law 2 continuity for
 navigation — a destination grows from the `Modifier.conveyOrigin`-marked element that led to it,
 a scale/translate approximation of a shared-element transition, not yet visually verified against
-a real display).
+a real display), and a first batch of concrete visual components: `ConveyListItem`, `ConveyCard`,
+`ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`, `ConveySegmentedControl`,
+`ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
