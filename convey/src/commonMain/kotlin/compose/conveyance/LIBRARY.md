@@ -179,6 +179,10 @@ compose.conveyance
 │   │                        in place into a reversible residue for a window, instead of a modal
 │   │                        or a bottom-of-screen undo bar. (Not ConveyGhost -- that name is
 │   │                        already ConveyWeight.Ghost, a different, unrelated concept.)
+│   ├── ConveyYield        — Replaces spinners/progress bars/skeletons: the engaged element
+│   │                        deforms (fills + compresses) proportionally or rhythmically in
+│   │                        place via Modifier.conveyYield, rather than a separate progress
+│   │                        object appearing beside it.
 │   ├── ConveyForceDynamics — Pure-Kotlin 2D force-dynamics primitives with no external physics
 │   │                        engine dependency: Vec2, attraction/repulsion, circle-circle collision
 │   │                        (ConveyForceDynamics), a symplectic-Euler rigid body (ConveyRigidBody),

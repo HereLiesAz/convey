@@ -86,9 +86,11 @@ map and public-API-level detail):
 (procedural static layout keyed to a sentence's verb), `ConveyForceDynamics` (the pure-Kotlin
 2D physics primitives `ConveySvoScene` consumes — no external physics engine dependency),
 `ConveyEscort` (replaces disabled controls — a blocked act shakes and travels to its gate's
-location instead of greying out), and `ConveyReversal` (replaces confirm dialogs/undo snackbars —
+location instead of greying out), `ConveyReversal` (replaces confirm dialogs/undo snackbars —
 a destroyed item collapses to a reversible residue in place; not `ConveyGhost`, since
-`ConveyWeight.Ghost` already names a different, unrelated concept).
+`ConveyWeight.Ghost` already names a different, unrelated concept), and `ConveyYield` (replaces
+spinners/progress bars — the engaged element fills and compresses in place instead of a separate
+progress object appearing beside it).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
