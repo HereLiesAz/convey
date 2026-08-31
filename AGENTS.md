@@ -87,6 +87,33 @@ map and public-API-level detail):
 2D physics primitives `ConveySvoScene` consumes — no external physics engine dependency).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
+## Dev loop
+
+Three extra Gradle modules exist purely to iterate on `convey/`'s composables faster; none of
+them are published, and none change what `:convey:build` produces:
+
+- `dev-app` — a plain JVM application module hosting a small gallery
+  (`dev-app/src/jvmMain/kotlin/compose/conveyance/dev/Dev.kt`) that exercises the kinetic
+  typography composables. `./gradlew :dev-app:hotRunJvm` runs it under [Compose Hot
+  Reload](https://kotlinlang.org/docs/multiplatform/compose-hot-reload.html): edit a composable
+  and save, and the running JVM picks up the change without restarting. It has to be a separate
+  application module rather than living inside `convey` itself — Hot Reload doesn't register any
+  `hotRun*` task applied inside a Kotlin Multiplatform *library* module. Every plugin `dev-app`
+  shares with `convey` (Kotlin, Compose) is declared once, unapplied, at the root
+  `build.gradle.kts`; declaring it per-subproject instead loads two separate instances of the
+  Kotlin Gradle Plugin, which silently breaks Hot Reload's plugin-identity check with no build
+  failure, only a logged warning — see that file's comment if this needs touching again.
+- `android-dev-app` — the same idea for an actual Android device: a real, installable
+  `com.android.application` module (`convey` itself can't be `adb install`ed, it's a library) with
+  a `MainActivity` hosting the same gallery.
+- `hotswap` — a free, from-scratch, on-device hot-swap tool for `android-dev-app`, since Compose
+  Hot Reload is desktop-only and the equivalent third-party tool (HotSwan) is paid. It redefines a
+  changed class on an already-running debuggable process over JDWP (the same ART primitive Android
+  Studio's own "Apply Changes" is built on), then broadcasts a reload trigger. See
+  `hotswap/README.md` for how it works and, importantly, what is and isn't actually verified — this
+  sandbox has no Android device, so the JDWP wire protocol is unit-tested but the real on-device
+  redefinition path is not.
+
 ## Docs accuracy discipline
 
 The three files in `convey/docs/` are research reports with an "Implementation status" section
