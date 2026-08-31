@@ -110,7 +110,7 @@ publishing {
                 "A Compose Multiplatform design system built on the Conveyance Manifesto. " +
                 "Every element earns its place. Motion is grammar. Shape is signal."
             )
-            url.set("https://github.com/conveyance/convey")
+            url.set("https://github.com/HereLiesAz/convey")
             licenses {
                 license {
                     name.set("Apache License 2.0")
