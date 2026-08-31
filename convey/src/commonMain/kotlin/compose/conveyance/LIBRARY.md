@@ -215,9 +215,22 @@ compose.conveyance
 │   │                        a scalar damped-harmonic "soft body" wobble (ConveySpringMassBody), and
 │   │                        a periodic bob/tilt gait approximation (ConveyGaitOscillator). Built
 │   │                        for, and consumed by, ConveySvoScene.
-│   └── ConveyTopographicalLayout — Static (non-animated) procedural layout (staircase, spiral,
-│                            ring...) that picks its own shape from a sentence's own verb via
-│                            ConveyVerbLexicon.topographicalCategory.
+│   ├── ConveyTopographicalLayout — Static (non-animated) procedural layout (staircase, spiral,
+│   │                        ring...) that picks its own shape from a sentence's own verb via
+│   │                        ConveyVerbLexicon.topographicalCategory.
+│   ├── ConveyListItem     — A row: leading/trailing slots, title/subtitle, weight-aware,
+│   │                        ripple + press feedback when clickable. The most common visual object.
+│   ├── ConveyCard         — A weight-aware surface. Elevation follows the channel table's
+│   │                        meaning (reversibility), not decoration -- see the doc comment.
+│   ├── ConveyAvatar       — Circular identity representation: caller-supplied content (typically
+│   │                        an image), falling back to a name's initials when there's none yet.
+│   ├── ConveyBadge        — A dot or count anchored to another element's corner. Appearing/
+│   │                        disappearing morphs; a genuine count change gets a confirm bounce.
+│   ├── ConveyChip         — A compact selectable tag. Selected/unselected is a color morph, not
+│   │                        a swapped background. Removal is a plain callback -- compose inside
+│   │                        ConveyReversal yourself if a given chip's removal should be undoable.
+│   └── ConveySwitch       — A toggle whose thumb is one persistent element that slides and morphs
+│                            color between states, never swapped for a different drawable.
 │
 └── tokens/
     ├── ConveyMotion       — Spring presets named for what they communicate.
