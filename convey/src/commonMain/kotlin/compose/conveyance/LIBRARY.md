@@ -183,6 +183,11 @@ compose.conveyance
 │   │                        deforms (fills + compresses) proportionally or rhythmically in
 │   │                        place via Modifier.conveyYield, rather than a separate progress
 │   │                        object appearing beside it.
+│   ├── ConveyEnter        — Law 2 (Continuity) for navigation: a destination grows from the
+│   │                        Modifier.conveyOrigin-marked element that led to it (a scale/
+│   │                        translate approximation of a shared-element transition) instead of
+│   │                        appearing via cross-fade or teleport. Not visually verified against
+│   │                        a real display -- see the doc comment.
 │   ├── ConveyOffer        — The framework's Act, offered: composes ConveyConstruct (purpose/
 │   │                        weight/outcome) + ConveyEscort (gate) + ConveyStateHost
 │   │                        (Invite/Progress/Success/Failure/Interrupted, all one element) into

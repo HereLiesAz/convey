@@ -92,10 +92,13 @@ a destroyed item collapses to a reversible residue in place; not `ConveyGhost`, 
 spinners/progress bars — the engaged element fills and compresses in place instead of a separate
 progress object appearing beside it), `ConveyMigration` (replaces empty-state illustrations —
 an empty collection's creation control sits full-size and centered, then relocates to its
-permanent corner and shrinks on first use), and `ConveyOffer` (the framework's Act, offered —
+permanent corner and shrinks on first use), `ConveyOffer` (the framework's Act, offered —
 composes `ConveyConstruct`+`ConveyEscort`+`ConveyStateHost` into one declaration with a gate, an
 interrupt, and Invite/Progress/Success/Failure/Interrupted states; a destructive act's inverse is
-`ConveyReversal` wrapping it, not a parameter on it).
+`ConveyReversal` wrapping it, not a parameter on it), and `ConveyEnter` (Law 2 continuity for
+navigation — a destination grows from the `Modifier.conveyOrigin`-marked element that led to it,
+a scale/translate approximation of a shared-element transition, not yet visually verified against
+a real display).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
