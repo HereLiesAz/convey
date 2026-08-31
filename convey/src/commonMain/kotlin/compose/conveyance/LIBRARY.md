@@ -183,6 +183,12 @@ compose.conveyance
 │   │                        deforms (fills + compresses) proportionally or rhythmically in
 │   │                        place via Modifier.conveyYield, rather than a separate progress
 │   │                        object appearing beside it.
+│   ├── ConveyOffer        — The framework's Act, offered: composes ConveyConstruct (purpose/
+│   │                        weight/outcome) + ConveyEscort (gate) + ConveyStateHost
+│   │                        (Invite/Progress/Success/Failure/Interrupted, all one element) into
+│   │                        the single declaration the framework's Act model calls for. A
+│   │                        destructive act's inverse is ConveyReversal wrapping this, not a
+│   │                        parameter on it -- see the doc comment's two worked examples.
 │   ├── ConveyMigration    — Replaces empty-state illustrations and their explanatory paragraphs:
 │   │                        an empty collection's creation control sits full-size, centered, in
 │   │                        the space the collection will occupy; on first use it relocates to

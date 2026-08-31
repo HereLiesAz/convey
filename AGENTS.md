@@ -90,9 +90,12 @@ location instead of greying out), `ConveyReversal` (replaces confirm dialogs/und
 a destroyed item collapses to a reversible residue in place; not `ConveyGhost`, since
 `ConveyWeight.Ghost` already names a different, unrelated concept), `ConveyYield` (replaces
 spinners/progress bars — the engaged element fills and compresses in place instead of a separate
-progress object appearing beside it), and `ConveyMigration` (replaces empty-state illustrations —
+progress object appearing beside it), `ConveyMigration` (replaces empty-state illustrations —
 an empty collection's creation control sits full-size and centered, then relocates to its
-permanent corner and shrinks on first use).
+permanent corner and shrinks on first use), and `ConveyOffer` (the framework's Act, offered —
+composes `ConveyConstruct`+`ConveyEscort`+`ConveyStateHost` into one declaration with a gate, an
+interrupt, and Invite/Progress/Success/Failure/Interrupted states; a destructive act's inverse is
+`ConveyReversal` wrapping it, not a parameter on it).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
