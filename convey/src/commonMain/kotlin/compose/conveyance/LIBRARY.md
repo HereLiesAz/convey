@@ -183,6 +183,10 @@ compose.conveyance
 │   │                        deforms (fills + compresses) proportionally or rhythmically in
 │   │                        place via Modifier.conveyYield, rather than a separate progress
 │   │                        object appearing beside it.
+│   ├── ConveyMigration    — Replaces empty-state illustrations and their explanatory paragraphs:
+│   │                        an empty collection's creation control sits full-size, centered, in
+│   │                        the space the collection will occupy; on first use it relocates to
+│   │                        its permanent corner and shrinks -- one element, no instructions.
 │   ├── ConveyForceDynamics — Pure-Kotlin 2D force-dynamics primitives with no external physics
 │   │                        engine dependency: Vec2, attraction/repulsion, circle-circle collision
 │   │                        (ConveyForceDynamics), a symplectic-Euler rigid body (ConveyRigidBody),

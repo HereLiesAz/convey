@@ -88,9 +88,11 @@ map and public-API-level detail):
 `ConveyEscort` (replaces disabled controls — a blocked act shakes and travels to its gate's
 location instead of greying out), `ConveyReversal` (replaces confirm dialogs/undo snackbars —
 a destroyed item collapses to a reversible residue in place; not `ConveyGhost`, since
-`ConveyWeight.Ghost` already names a different, unrelated concept), and `ConveyYield` (replaces
+`ConveyWeight.Ghost` already names a different, unrelated concept), `ConveyYield` (replaces
 spinners/progress bars — the engaged element fills and compresses in place instead of a separate
-progress object appearing beside it).
+progress object appearing beside it), and `ConveyMigration` (replaces empty-state illustrations —
+an empty collection's creation control sits full-size and centered, then relocates to its
+permanent corner and shrinks on first use).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
