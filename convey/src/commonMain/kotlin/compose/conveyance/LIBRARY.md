@@ -229,8 +229,14 @@ compose.conveyance
 │   ├── ConveyChip         — A compact selectable tag. Selected/unselected is a color morph, not
 │   │                        a swapped background. Removal is a plain callback -- compose inside
 │   │                        ConveyReversal yourself if a given chip's removal should be undoable.
-│   └── ConveySwitch       — A toggle whose thumb is one persistent element that slides and morphs
-│                            color between states, never swapped for a different drawable.
+│   ├── ConveySwitch       — A toggle whose thumb is one persistent element that slides and morphs
+│   │                        color between states, never swapped for a different drawable.
+│   ├── ConveySegmentedControl — Selection among fixed equal-width options via one persistent
+│   │                        sliding indicator, not separate per-option highlighting.
+│   ├── ConveyTopBar       — Structural chrome: leading slot, weight-declared title, action row.
+│   └── ConveyNavigationBar — Bottom/rail navigation with the same sliding-indicator principle as
+│                            ConveySegmentedControl: a pill moves to sit behind the selected
+│                            destination's icon, rather than recoloring each in place.
 │
 └── tokens/
     ├── ConveyMotion       — Spring presets named for what they communicate.

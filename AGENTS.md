@@ -106,7 +106,8 @@ interrupt, and Invite/Progress/Success/Failure/Interrupted states; a destructive
 navigation — a destination grows from the `Modifier.conveyOrigin`-marked element that led to it,
 a scale/translate approximation of a shared-element transition, not yet visually verified against
 a real display), and a first batch of concrete visual components: `ConveyListItem`, `ConveyCard`,
-`ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch` (see LIBRARY.md for each).
+`ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`, `ConveySegmentedControl`,
+`ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
