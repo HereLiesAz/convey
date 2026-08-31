@@ -83,8 +83,12 @@ map and public-API-level detail):
 
 `foundation/` holds composables built on the above: `ConveyStateHost`, `ConveyFab`,
 `ConveyConstruct`, `ConveyAttentionGrid`, `ConveyMorphControl`, `ConveyTopographicalLayout`
-(procedural static layout keyed to a sentence's verb), and `ConveyForceDynamics` (the pure-Kotlin
-2D physics primitives `ConveySvoScene` consumes — no external physics engine dependency).
+(procedural static layout keyed to a sentence's verb), `ConveyForceDynamics` (the pure-Kotlin
+2D physics primitives `ConveySvoScene` consumes — no external physics engine dependency),
+`ConveyEscort` (replaces disabled controls — a blocked act shakes and travels to its gate's
+location instead of greying out), and `ConveyReversal` (replaces confirm dialogs/undo snackbars —
+a destroyed item collapses to a reversible residue in place; not `ConveyGhost`, since
+`ConveyWeight.Ghost` already names a different, unrelated concept).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
