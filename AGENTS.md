@@ -83,8 +83,19 @@ map and public-API-level detail):
 
 `foundation/` holds composables built on the above: `ConveyStateHost`, `ConveyFab`,
 `ConveyConstruct`, `ConveyAttentionGrid`, `ConveyMorphControl`, `ConveyTopographicalLayout`
-(procedural static layout keyed to a sentence's verb), and `ConveyForceDynamics` (the pure-Kotlin
-2D physics primitives `ConveySvoScene` consumes — no external physics engine dependency).
+(procedural static layout keyed to a sentence's verb), `ConveyForceDynamics` (the pure-Kotlin
+2D physics primitives `ConveySvoScene` consumes — no external physics engine dependency),
+`ConveyEscort` (replaces disabled controls — a blocked act shakes and travels to its gate's
+location instead of greying out), `ConveyReversal` (replaces confirm dialogs/undo snackbars —
+a destroyed item collapses to a reversible residue in place; not `ConveyGhost`, since
+`ConveyWeight.Ghost` already names a different, unrelated concept), `ConveyYield` (replaces
+spinners/progress bars — the engaged element fills and compresses in place instead of a separate
+progress object appearing beside it), `ConveyMigration` (replaces empty-state illustrations —
+an empty collection's creation control sits full-size and centered, then relocates to its
+permanent corner and shrinks on first use), and `ConveyOffer` (the framework's Act, offered —
+composes `ConveyConstruct`+`ConveyEscort`+`ConveyStateHost` into one declaration with a gate, an
+interrupt, and Invite/Progress/Success/Failure/Interrupted states; a destructive act's inverse is
+`ConveyReversal` wrapping it, not a parameter on it).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
