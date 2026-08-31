@@ -167,6 +167,13 @@ compose.conveyance
 │                            squash/stretch, and (for an animate subject) bob/tilt in a gait
 │                            approximation. Falls back to ConveyKineticSentence when the heuristic
 │                            can't confidently split the sentence.
+├── ConveyPractice         — Practice-decay (§6.3): ConveyPracticeRegistry counts an element's
+│                            genuine operations; conveyPracticeDecay() turns that count into a
+│                            1f->floor multiplier; AnimationSpec.decayed() spends it shortening a
+│                            tween or stiffening a spring, and conveyPracticedAffordance() spends
+│                            it silencing a Tell after the first real operation. In-memory/
+│                            session-scoped by default, like every other registry here --
+│                            ConveyPracticeRegistry.seed() is the hook for your own persistence.
 ├── ConveyProvider         — ConveySystem root. Activates all enforcement.
 │
 ├── foundation/

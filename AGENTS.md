@@ -57,6 +57,11 @@ map and public-API-level detail):
   that throws in debug builds on a violated constraint (e.g. two Heroes).
 - `ConveyEmployment` — Law 4 enforcement: every element declares at least 4 of the 11 `ConveyJob`s
   or is explicitly `ambient` (budgeted per surface), via the same registry pattern as `ConveyWeight`.
+- `ConveyPractice` — practice-decay (§6.3): `ConveyPracticeRegistry` counts an element's genuine
+  operations; `conveyPracticeDecay()` turns that into a `1f->floor` multiplier spent two ways —
+  `AnimationSpec.decayed()` shortens a tween/stiffens a spring, `conveyPracticedAffordance()`
+  silences a Tell after the first real operation. In-memory/session-scoped by default; `seed()`
+  is the hook for an app's own persistence.
 - `ConveyAffordance` — self-revealing interactivity (teaches a gesture once, then stops).
 - `ConveyInteraction` — ripple, press, long-press, swipe, grammar-driven.
 - `ConveyTransform` — scale/lift/rotate/slide transforms, grammar-driven.
