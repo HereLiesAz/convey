@@ -14,7 +14,9 @@
 // multiple times in different subprojects... add the Kotlin plugin to the common parent project".
 plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.jetbrainsCompose) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.composeHotReload) apply false

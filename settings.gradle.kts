@@ -26,3 +26,5 @@ dependencyResolutionManagement {
 
 include(":convey")
 include(":dev-app")
+include(":android-dev-app")
+include(":hotswap")
