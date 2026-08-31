@@ -55,6 +55,8 @@ map and public-API-level detail):
   other composable's motion is driven through this, not a raw spec.
 - `ConveyWeight` — visual-hierarchy enforcement (Hero/Primary/Secondary/Ghost) with a registry
   that throws in debug builds on a violated constraint (e.g. two Heroes).
+- `ConveyEmployment` — Law 4 enforcement: every element declares at least 4 of the 11 `ConveyJob`s
+  or is explicitly `ambient` (budgeted per surface), via the same registry pattern as `ConveyWeight`.
 - `ConveyAffordance` — self-revealing interactivity (teaches a gesture once, then stops).
 - `ConveyInteraction` — ripple, press, long-press, swipe, grammar-driven.
 - `ConveyTransform` — scale/lift/rotate/slide transforms, grammar-driven.

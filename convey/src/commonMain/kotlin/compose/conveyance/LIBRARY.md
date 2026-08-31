@@ -134,6 +134,10 @@ compose.conveyance
 ├── ConveyGrammar          — Motion vocabulary. The central contract.
 ├── ConveyMorph            — Persistent identity morphing between shapes and colors.
 ├── ConveyWeight           — Visual hierarchy enforcement (Hero/Primary/Secondary/Ghost).
+├── ConveyEmployment       — Law 4 enforcement: every element declares >=4 of the 11 ConveyJobs
+│                            (Invite/Locate/Progress/Report/Identify/Group/Separate/Warn/Confirm/
+│                            Navigate/Interrupt) or is explicitly ambient, budgeted per surface.
+│                            Same registry pattern as ConveyWeight.
 ├── ConveyAffordance       — Self-revealing interactivity. Teaches once, then trusts.
 ├── ConveyInteraction      — Ripple, press, long-press, swipe.
 ├── ConveyTransform        — Scale, lift, rotate, slide — with grammar-driven specs.
