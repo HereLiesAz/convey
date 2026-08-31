@@ -134,6 +134,10 @@ compose.conveyance
 ├── ConveyGrammar          — Motion vocabulary. The central contract.
 ├── ConveyMorph            — Persistent identity morphing between shapes and colors.
 ├── ConveyWeight           — Visual hierarchy enforcement (Hero/Primary/Secondary/Ghost).
+├── ConveyEmployment       — Law 4 enforcement: every element declares >=4 of the 11 ConveyJobs
+│                            (Invite/Locate/Progress/Report/Identify/Group/Separate/Warn/Confirm/
+│                            Navigate/Interrupt) or is explicitly ambient, budgeted per surface.
+│                            Same registry pattern as ConveyWeight.
 ├── ConveyAffordance       — Self-revealing interactivity. Teaches once, then trusts.
 ├── ConveyInteraction      — Ripple, press, long-press, swipe.
 ├── ConveyTransform        — Scale, lift, rotate, slide — with grammar-driven specs.
@@ -163,6 +167,13 @@ compose.conveyance
 │                            squash/stretch, and (for an animate subject) bob/tilt in a gait
 │                            approximation. Falls back to ConveyKineticSentence when the heuristic
 │                            can't confidently split the sentence.
+├── ConveyPractice         — Practice-decay (§6.3): ConveyPracticeRegistry counts an element's
+│                            genuine operations; conveyPracticeDecay() turns that count into a
+│                            1f->floor multiplier; AnimationSpec.decayed() spends it shortening a
+│                            tween or stiffening a spring, and conveyPracticedAffordance() spends
+│                            it silencing a Tell after the first real operation. In-memory/
+│                            session-scoped by default, like every other registry here --
+│                            ConveyPracticeRegistry.seed() is the hook for your own persistence.
 ├── ConveyProvider         — ConveySystem root. Activates all enforcement.
 │
 ├── foundation/
@@ -183,6 +194,11 @@ compose.conveyance
 │   │                        deforms (fills + compresses) proportionally or rhythmically in
 │   │                        place via Modifier.conveyYield, rather than a separate progress
 │   │                        object appearing beside it.
+│   ├── ConveyEnter        — Law 2 (Continuity) for navigation: a destination grows from the
+│   │                        Modifier.conveyOrigin-marked element that led to it (a scale/
+│   │                        translate approximation of a shared-element transition) instead of
+│   │                        appearing via cross-fade or teleport. Not visually verified against
+│   │                        a real display -- see the doc comment.
 │   ├── ConveyOffer        — The framework's Act, offered: composes ConveyConstruct (purpose/
 │   │                        weight/outcome) + ConveyEscort (gate) + ConveyStateHost
 │   │                        (Invite/Progress/Success/Failure/Interrupted, all one element) into

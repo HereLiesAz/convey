@@ -55,6 +55,13 @@ map and public-API-level detail):
   other composable's motion is driven through this, not a raw spec.
 - `ConveyWeight` — visual-hierarchy enforcement (Hero/Primary/Secondary/Ghost) with a registry
   that throws in debug builds on a violated constraint (e.g. two Heroes).
+- `ConveyEmployment` — Law 4 enforcement: every element declares at least 4 of the 11 `ConveyJob`s
+  or is explicitly `ambient` (budgeted per surface), via the same registry pattern as `ConveyWeight`.
+- `ConveyPractice` — practice-decay (§6.3): `ConveyPracticeRegistry` counts an element's genuine
+  operations; `conveyPracticeDecay()` turns that into a `1f->floor` multiplier spent two ways —
+  `AnimationSpec.decayed()` shortens a tween/stiffens a spring, `conveyPracticedAffordance()`
+  silences a Tell after the first real operation. In-memory/session-scoped by default; `seed()`
+  is the hook for an app's own persistence.
 - `ConveyAffordance` — self-revealing interactivity (teaches a gesture once, then stops).
 - `ConveyInteraction` — ripple, press, long-press, swipe, grammar-driven.
 - `ConveyTransform` — scale/lift/rotate/slide transforms, grammar-driven.
@@ -92,10 +99,13 @@ a destroyed item collapses to a reversible residue in place; not `ConveyGhost`, 
 spinners/progress bars — the engaged element fills and compresses in place instead of a separate
 progress object appearing beside it), `ConveyMigration` (replaces empty-state illustrations —
 an empty collection's creation control sits full-size and centered, then relocates to its
-permanent corner and shrinks on first use), and `ConveyOffer` (the framework's Act, offered —
+permanent corner and shrinks on first use), `ConveyOffer` (the framework's Act, offered —
 composes `ConveyConstruct`+`ConveyEscort`+`ConveyStateHost` into one declaration with a gate, an
 interrupt, and Invite/Progress/Success/Failure/Interrupted states; a destructive act's inverse is
-`ConveyReversal` wrapping it, not a parameter on it).
+`ConveyReversal` wrapping it, not a parameter on it), and `ConveyEnter` (Law 2 continuity for
+navigation — a destination grows from the `Modifier.conveyOrigin`-marked element that led to it,
+a scale/translate approximation of a shared-element transition, not yet visually verified against
+a real display).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
 
 ## Dev loop
