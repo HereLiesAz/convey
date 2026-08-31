@@ -65,6 +65,10 @@ For everything currently in the library — every composable, what it replaces, 
 see **[LIBRARY.md](convey/src/commonMain/kotlin/compose/conveyance/LIBRARY.md)**, and
 **[AGENTS.md](AGENTS.md)** for the module layout and how to build this repo yourself.
 
+For the generated, per-class/per-function reference (every public signature and doc comment,
+kept current automatically on every push to `main`), see the
+**[wiki's API reference](../../wiki/api-reference/index)**.
+
 ## What's actually here today
 
 **Built, compiling, tested:** the full grammar/weight/employment enforcement layer; the six

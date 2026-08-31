@@ -1,3 +1,5 @@
+import org.jetbrains.dokka.gradle.formats.DokkaFormatPlugin
+import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -6,8 +8,26 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.dokka)
     `maven-publish`
 }
+
+// GitHub wikis render Markdown (via Gollum), not a static HTML site with its own CSS/JS assets --
+// Dokka's default output. This registers GitHub-Flavored-Markdown as an additional Dokka output
+// format (`dokkaGenerateMarkdown`) so the API reference can be pushed straight into the wiki repo
+// (see .github/workflows/publish-docs.yml). HTML output (`dokkaGenerateHtml`) is untouched.
+@OptIn(InternalDokkaGradlePluginApi::class)
+abstract class DokkaMarkdownPlugin : DokkaFormatPlugin(formatName = "markdown") {
+    override fun DokkaFormatPluginContext.configure() {
+        project.dependencies {
+            dokkaPlugin(dokka("gfm-plugin"))
+            formatDependencies.dokkaPublicationPluginClasspathApiOnly.dependencies.addLater(
+                dokka("gfm-template-processing-plugin")
+            )
+        }
+    }
+}
+apply<DokkaMarkdownPlugin>()
 
 group = "compose.conveyance"
 version = "1.0.0"
