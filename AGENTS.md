@@ -105,9 +105,18 @@ interrupt, and Invite/Progress/Success/Failure/Interrupted states; a destructive
 `ConveyReversal` wrapping it, not a parameter on it), `ConveyEnter` (Law 2 continuity for
 navigation — a destination grows from the `Modifier.conveyOrigin`-marked element that led to it,
 a scale/translate approximation of a shared-element transition, not yet visually verified against
-a real display), and a first batch of concrete visual components: `ConveyListItem`, `ConveyCard`,
-`ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`, `ConveySegmentedControl`,
-`ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
+a real display), `ConveyDesign`/`ConveyDesignPage` (Part XI of the Manifesto, "The Design
+Block" — automatic composition for semantic-level text: `ConveyDesignSolver` adjusts
+size/weight/condensation/tracking so a block's (or, via `ConveyDesignPage`, a whole page's —
+§11.7's cross-block propagation) silhouette reads as balanced; condensation and weight render
+through real Azrienoch `wdth`/`wght` axes via `conveyTypeFontFamily`, not an approximation),
+`ConveyDecoration` (`ConveyActText`/`ConveyDecoratedText` — Part IV §4.2, "Text as an Act": the
+Decoration channel, a persistent marker on text that is itself an Act, plus a one-time Tell
+burst through the kinetic-typography engine for an unpracticed instance — `ConveyDesignLine`'s
+`isAct` wires this straight into a `DESIGN` block's own lines), and a first batch of concrete
+visual components: `ConveyListItem`, `ConveyCard`, `ConveyAvatar`, `ConveyBadge`, `ConveyChip`,
+`ConveySwitch`, `ConveySegmentedControl`, `ConveyTopBar`, and `ConveyNavigationBar` (see
+LIBRARY.md for each).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`.
 `ConveyType` is this library's official typeface — [Azrienoch](https://github.com/HereLiesAz/Azrienoch),
 a multiplex variable font (SIL OFL 1.1) exposing `wght`/`wdth`/`SERF`/`GRAD` as one family
