@@ -223,4 +223,45 @@ class ConveyDesignSolverTest {
         assertEquals(1, page.size)
         assertEquals(block, page[0])
     }
+
+    // An injected measure that ignores text/condensation/tracking and returns fontSizeSp
+    // verbatim -- chosen so its output is trivially distinguishable from naturalWidth's (which
+    // scales with both character count and fontSize together), proving the solver actually used
+    // the injected function rather than silently falling back to the default.
+    private val identityMeasure: ConveyDesignMeasure = { _, fontSizeSp, _, _ -> fontSizeSp }
+
+    @Test
+    fun solveToWidthUsesAnInjectedMeasureInsteadOfNaturalWidth() {
+        val nominal = ConveyDesignAxes(fontSizeSp = 16f, weight = 400f, condensation = 100f, trackingSp = 0f)
+        val fit = ConveyDesignSolver.solveToWidth("hello world", nominal, targetWidth = 20f, maxSizeSp = 40f, measure = identityMeasure)
+
+        assertTrue(fit != null)
+        assertClose(20f, fit!!.fontSizeSp, tolerance = 1f)
+    }
+
+    @Test
+    fun solveBlockUsesAnInjectedMeasureForColumnCarvingAndColumnFillAlike() {
+        val lines = listOf(
+            ConveyDesignLine("Defining", ConveyDesignLevel.Header1, ConveyDesignAlignment.Left),
+            ConveyDesignLine("Second line", ConveyDesignLevel.Body, ConveyDesignAlignment.Left),
+        )
+        val fullWidth = 200f
+        val solved = ConveyDesignSolver.solveBlock(lines, fullWidth, measure = identityMeasure)
+
+        // The defining line's column should equal identityMeasure's output (its own nominal
+        // fontSize), not naturalWidth's much larger character-scaled estimate.
+        val definingNominalSize = ConveyDesignSolver.nominalSize(ConveyDesignLevel.Header1)
+        assertClose(minOf(definingNominalSize, fullWidth), solved[0].column.end, tolerance = 1f)
+    }
+
+    @Test
+    fun solvePageThreadsTheInjectedMeasureThroughEveryBlock() {
+        val block1 = listOf(ConveyDesignLine("Short", ConveyDesignLevel.Header1, ConveyDesignAlignment.Left))
+        val block2 = listOf(ConveyDesignLine("Also short", ConveyDesignLevel.Body, ConveyDesignAlignment.Left))
+        val fullWidth = 200f
+
+        val solved = ConveyDesignSolver.solvePage(listOf(block1, block2), fullWidth, measure = identityMeasure)
+        val definingNominalSize = ConveyDesignSolver.nominalSize(ConveyDesignLevel.Header1)
+        assertClose(minOf(definingNominalSize, fullWidth), solved[0][0].column.end, tolerance = 1f)
+    }
 }
