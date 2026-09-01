@@ -1,5 +1,6 @@
 package compose.conveyance.foundation
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,16 +10,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import compose.conveyance.ConveyKineticSentence
 import compose.conveyance.ConveyKineticText
 import compose.conveyance.ConveyLife
 import compose.conveyance.tokens.ConveyColor
+import compose.conveyance.tokens.ConveyTypeVariation
+import compose.conveyance.tokens.conveyTypeFontFamily
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 /**
  * The framework's automatic-composition primitive — Part XI of the Conveyance Manifesto,
@@ -34,17 +36,20 @@ import kotlin.math.roundToInt
  * too narrow to hold it reasonably mirrors the earlier line's whole shape to the opposite edge
  * instead of forcing an unreadable fit (the mirror-fallback rule, §11.6).
  *
+ * [ConveyDesignPage] promotes the same rules one level, §11.7: multiple `DESIGN` blocks on one
+ * page relate to each other the way lines within one block do (a block that doesn't span the
+ * full width becomes the measure the next block balances against; a shorter block's height
+ * pulls toward the accumulated height of the blocks before it), reusing the exact same
+ * column-targeting and mirror-fallback logic rather than a separate mechanism.
+ *
  * **Implementation status:** the solver ([ConveyDesignSolver]) is pure, platform-independent
  * math and is exercised directly by `ConveyDesignSolverTest` — it does not depend on this file's
- * Composable wrapper. The wrapper takes the block's available width as an explicit `fullWidthSp`
- * parameter (in the same approximate "advance-width units" the solver's own [ConveyDesignSolver]
- * uses) rather than measuring the actual rendered width of its content via a `TextMeasurer` —
- * real glyph metrics per platform/font are real future work, not yet done here. Condensation is
- * rendered as a horizontal `graphicsLayer` scale rather than a variable font's `wdth` axis,
- * since `ConveyType`'s Azrienoch integration (`tokens/ConveyType.kt`) has not landed on this
- * branch yet; wiring true `wdth`/`wght` axes through `conveyTypeFontFamily` once it does is the
- * natural next step and should replace both approximations without changing this file's public
- * API shape.
+ * Composable wrappers. They take the available width as an explicit `fullWidthSp` parameter (in
+ * the same approximate "advance-width units" the solver uses) rather than measuring the actual
+ * rendered width of content via a `TextMeasurer` — real glyph metrics per platform/font are real
+ * future work, not yet done here. Condensation and weight now render through real Azrienoch
+ * variable-font axes (`wdth`/`wght`, via [conveyTypeFontFamily]) rather than a `graphicsLayer`
+ * approximation, now that `ConveyType`'s Azrienoch integration has landed.
  *
  * **Motion (§4.2 of the manifesto):** every [ConveyDesignLine] defaults to
  * [ConveyDesignMotion.None] — static, solved layout only. A line may opt into
@@ -52,7 +57,10 @@ import kotlin.math.roundToInt
  * [ConveyDesignMotion.Sentence] (per-word, verb-driven, via [ConveyKineticSentence]); this block
  * never picks a motion for a line on its own. Solved size/weight/condensation/tracking apply
  * identically regardless of motion — motion is layered on top of the solve, never a substitute
- * for it.
+ * for it. A line with [ConveyDesignLine.isAct] set ignores `motion` and always renders through
+ * [ConveyActText] instead — the persistent Decoration channel plus a one-time Tell burst, per
+ * §4.2 ("text as an Act"), rather than a developer having to pick a motion that happens to also
+ * look like a link.
  */
 enum class ConveyDesignLevel(internal val scaleStep: Int) {
     Title(4),
@@ -93,10 +101,14 @@ data class ConveyDesignLine(
     val alignment: ConveyDesignAlignment = ConveyDesignAlignment.Left,
     /** Rule 1 of the column-targeting tree (§11.5): an explicit column always wins. */
     val explicitColumn: ConveyDesignColumn? = null,
-    /** See [ConveyDesignMotion] — defaults to no motion at all. */
+    /** See [ConveyDesignMotion] — defaults to no motion at all. Ignored when [isAct] is set. */
     val motion: ConveyDesignMotion = ConveyDesignMotion.None,
     /** Idle motion [ConveyKineticText] falls back to between Kinetic bursts; ignored otherwise. */
     val idle: ConveyLife = ConveyLife.None,
+    /** §4.2: this line is itself an Act, not merely descriptive text. Renders via [ConveyActText]. */
+    val isAct: Boolean = false,
+    /** Required when [isAct] is set; ignored otherwise. */
+    val onClick: (() -> Unit)? = null,
 )
 
 /** The four levers the solver adjusts, in priority order: size, weight, condensation, tracking. */
@@ -115,12 +127,12 @@ data class ConveyDesignSolvedLine(
     val axes: ConveyDesignAxes,
     val naturalWidth: Float,
     val column: ConveyDesignColumn,
-    /** True when the mirror-fallback rule (§11.6) fired for this line. */
+    /** True when the mirror-fallback rule (§11.6, or its block-level promotion, §11.7) fired for this line. */
     val mirrored: Boolean,
 )
 
 /**
- * Pure, platform-independent solver math for §11.2–§11.6 of the Design Block spec. Kept free of
+ * Pure, platform-independent solver math for §11.2–§11.7 of the Design Block spec. Kept free of
  * any Composable/UI dependency so it is directly unit-testable.
  */
 object ConveyDesignSolver {
@@ -129,6 +141,9 @@ object ConveyDesignSolver {
     const val DEFAULT_RATIO = 1.333f
     const val DEFAULT_BASE_SIZE_SP = 16f
     const val MIN_REASONABLE_SIZE_SP = 9f
+
+    /** Azrienoch's real published `wdth` floor (`ConveyTypeAxis.Width.min`) — condensation cannot go narrower than the font actually supports. */
+    const val MIN_CONDENSATION = 75f
 
     private const val SPACE_ADVANCE = 0.28f
     private const val AVG_ADVANCE = 0.52f
@@ -183,7 +198,7 @@ object ConveyDesignSolver {
         targetWidth: Float,
         minSizeSp: Float = MIN_REASONABLE_SIZE_SP,
         maxSizeSp: Float = nominal.fontSizeSp * 1.5f,
-        minCondensation: Float = 62.5f,
+        minCondensation: Float = MIN_CONDENSATION,
         maxCondensation: Float = 100f,
         maxTrackingSp: Float = 2f,
     ): ConveyDesignAxes? {
@@ -248,7 +263,7 @@ object ConveyDesignSolver {
             }
         }
 
-    /** The column-targeting decision tree, §11.5, rules 2–4 (rule 1 — explicit override — is handled by the caller). */
+    /** The column-targeting decision tree, §11.5, rules 2–4 (rule 1 — explicit override — is handled by the caller). Reused unchanged at block level by [solvePage] (§11.7). */
     private fun targetColumnFor(definingLine: ConveyDesignLine, definingColumn: ConveyDesignColumn, fullWidth: Float): ConveyDesignColumn? =
         when (definingLine.alignment) {
             ConveyDesignAlignment.Justify -> ConveyDesignColumn(0f, fullWidth)
@@ -323,6 +338,120 @@ object ConveyDesignSolver {
 
         return solved
     }
+
+    /** Solves [lines] against [column]'s own width, then offsets every result back into [column]'s absolute position — the block-level counterpart of a line filling an inherited column. */
+    private fun solveBlockWithinColumn(lines: List<ConveyDesignLine>, column: ConveyDesignColumn, baseSizeSp: Float, ratio: Float): List<ConveyDesignSolvedLine> {
+        val relative = solveBlock(lines, column.width, baseSizeSp, ratio)
+        return relative.map { it.copy(column = ConveyDesignColumn(column.start + it.column.start, column.start + it.column.end)) }
+    }
+
+    /** The smallest column spanning every line's own column in [block] — that block's "whole shape," for the mirror-fallback rule promoted to block level. */
+    private fun boundingColumn(block: List<ConveyDesignSolvedLine>): ConveyDesignColumn =
+        ConveyDesignColumn(block.minOf { it.column.start }, block.maxOf { it.column.end })
+
+    /**
+     * §11.7: cross-block (page-level) propagation, promoted one level from §11.5/§11.6 rather
+     * than a separate mechanism — blocks share the same full-width coordinate space lines
+     * within one block do, so [targetColumnFor] and the mirror-fallback rule apply unchanged,
+     * one level up. Each block after the first relates to the *accumulated* shape of every
+     * block before it (running max right edge, running total height), not just the immediately
+     * preceding block alone — the working model for "the balancing is spread out" across three
+     * or more blocks, while column-targeting itself anchors off the nearest (most recent)
+     * block, since that is what §11.5's tree was already built to read.
+     */
+    fun solvePage(
+        blocks: List<List<ConveyDesignLine>>,
+        fullWidth: Float,
+        baseSizeSp: Float = DEFAULT_BASE_SIZE_SP,
+        ratio: Float = DEFAULT_RATIO,
+    ): List<List<ConveyDesignSolvedLine>> {
+        if (blocks.isEmpty()) return emptyList()
+
+        val solvedBlocks = ArrayList<List<ConveyDesignSolvedLine>>(blocks.size)
+        var referenceBlock = solveBlock(blocks[0], fullWidth, baseSizeSp, ratio)
+        solvedBlocks.add(referenceBlock)
+        var accumulatedRightEdge = referenceBlock.maxOf { it.column.end }
+        var accumulatedHeight = referenceBlock.sumOf { it.axes.fontSizeSp.toDouble() }.toFloat()
+
+        for (i in 1 until blocks.size) {
+            val blockLines = blocks[i]
+            val spansFull = accumulatedRightEdge >= fullWidth * 0.999f
+
+            var solved = if (spansFull) {
+                solveBlock(blockLines, fullWidth, baseSizeSp, ratio)
+            } else {
+                val anchorLine = referenceBlock.first().line
+                val anchorColumn = referenceBlock.first().column
+                val target = targetColumnFor(anchorLine, anchorColumn, fullWidth)
+                val tooNarrow = target == null || target.width < fullWidth * 0.15f
+                if (tooNarrow) {
+                    val mirroredColumn = boundingColumn(referenceBlock).let { ConveyDesignColumn(fullWidth - it.end, fullWidth - it.start) }
+                    solveBlockWithinColumn(blockLines, mirroredColumn, baseSizeSp, ratio).map { it.copy(mirrored = true) }
+                } else {
+                    solveBlockWithinColumn(blockLines, target!!, baseSizeSp, ratio)
+                }
+            }
+
+            // Height-balancing: a block with fewer lines than its reference scales its lines'
+            // sizes so its own total height approaches (never forced exactly to) the accumulated
+            // height so far -- the same hierarchy-pull idea used within a block, one level up.
+            if (blockLines.size < referenceBlock.size) {
+                val ownHeight = solved.sumOf { it.axes.fontSizeSp.toDouble() }.toFloat()
+                val targetHeight = accumulatedHeight / solvedBlocks.size
+                if (ownHeight > 0f) {
+                    val scale = (targetHeight / ownHeight).coerceIn(0.6f, 1.8f)
+                    solved = solved.map { it.copy(axes = it.axes.copy(fontSizeSp = it.axes.fontSizeSp * scale)) }
+                }
+            }
+
+            solvedBlocks.add(solved)
+            accumulatedRightEdge = maxOf(accumulatedRightEdge, solved.maxOf { it.column.end })
+            accumulatedHeight += solved.sumOf { it.axes.fontSizeSp.toDouble() }.toFloat()
+            referenceBlock = solved
+        }
+
+        return solvedBlocks
+    }
+}
+
+/** Builds the real Azrienoch [TextStyle] for one solved line's axes -- `wght`/`wdth` via [conveyTypeFontFamily], never a `graphicsLayer` approximation. */
+@Composable
+private fun conveyDesignTextStyle(axes: ConveyDesignAxes, color: Color): TextStyle = TextStyle(
+    color = color,
+    fontSize = axes.fontSizeSp.sp,
+    fontFamily = conveyTypeFontFamily(ConveyTypeVariation(weight = axes.weight, width = axes.condensation)),
+    letterSpacing = axes.trackingSp.sp,
+)
+
+@Composable
+private fun ConveyDesignSolvedLineRow(solvedLine: ConveyDesignSolvedLine, color: Color) {
+    val boxAlignment = when (solvedLine.line.alignment) {
+        ConveyDesignAlignment.Left -> Alignment.CenterStart
+        ConveyDesignAlignment.Right -> Alignment.CenterEnd
+        ConveyDesignAlignment.Center -> Alignment.Center
+        ConveyDesignAlignment.Justify -> Alignment.CenterStart
+    }
+    val style = conveyDesignTextStyle(solvedLine.axes, color)
+
+    Box(Modifier.fillMaxWidth(), contentAlignment = boxAlignment) {
+        when {
+            solvedLine.line.isAct -> ConveyActText(
+                text = solvedLine.line.text,
+                onClick = solvedLine.line.onClick ?: {},
+                style = style,
+            )
+            solvedLine.line.motion == ConveyDesignMotion.Kinetic -> ConveyKineticText(
+                text = solvedLine.line.text,
+                idle = solvedLine.line.idle,
+                style = style,
+            )
+            solvedLine.line.motion == ConveyDesignMotion.Sentence -> ConveyKineticSentence(
+                text = solvedLine.line.text,
+                style = style,
+            )
+            else -> androidx.compose.material3.Text(text = solvedLine.line.text, style = style)
+        }
+    }
 }
 
 /**
@@ -343,38 +472,33 @@ fun ConveyDesign(
     }
     Column(modifier = modifier.fillMaxWidth()) {
         for (solvedLine in solved) {
-            val boxAlignment = when (solvedLine.line.alignment) {
-                ConveyDesignAlignment.Left -> Alignment.CenterStart
-                ConveyDesignAlignment.Right -> Alignment.CenterEnd
-                ConveyDesignAlignment.Center -> Alignment.Center
-                ConveyDesignAlignment.Justify -> Alignment.CenterStart
-            }
-            val style = TextStyle(
-                color = color,
-                fontSize = solvedLine.axes.fontSizeSp.sp,
-                fontWeight = FontWeight(solvedLine.axes.weight.roundToInt().coerceIn(1, 1000)),
-                letterSpacing = solvedLine.axes.trackingSp.sp,
-            )
-            val condensed = Modifier.graphicsLayer(scaleX = solvedLine.axes.condensation / 100f)
+            ConveyDesignSolvedLineRow(solvedLine, color)
+        }
+    }
+}
 
-            Box(Modifier.fillMaxWidth(), contentAlignment = boxAlignment) {
-                when (solvedLine.line.motion) {
-                    ConveyDesignMotion.None -> androidx.compose.material3.Text(
-                        text = solvedLine.line.text,
-                        style = style,
-                        modifier = condensed,
-                    )
-                    ConveyDesignMotion.Kinetic -> ConveyKineticText(
-                        text = solvedLine.line.text,
-                        idle = solvedLine.line.idle,
-                        style = style,
-                        modifier = condensed,
-                    )
-                    ConveyDesignMotion.Sentence -> ConveyKineticSentence(
-                        text = solvedLine.line.text,
-                        style = style,
-                        modifier = condensed,
-                    )
+/**
+ * Renders multiple [ConveyDesign] blocks as one page/screen, solved together per §11.7 — see
+ * [ConveyDesignSolver.solvePage].
+ */
+@Composable
+fun ConveyDesignPage(
+    blocks: List<List<ConveyDesignLine>>,
+    fullWidthSp: Float,
+    modifier: Modifier = Modifier,
+    color: Color = ConveyColor.OnSurface,
+    baseSizeSp: Float = ConveyDesignSolver.DEFAULT_BASE_SIZE_SP,
+    ratio: Float = ConveyDesignSolver.DEFAULT_RATIO,
+    blockSpacing: Dp = 24.dp,
+) {
+    val solvedBlocks = remember(blocks, fullWidthSp, baseSizeSp, ratio) {
+        ConveyDesignSolver.solvePage(blocks, fullWidthSp, baseSizeSp, ratio)
+    }
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(blockSpacing)) {
+        for (solvedBlock in solvedBlocks) {
+            Column(Modifier.fillMaxWidth()) {
+                for (solvedLine in solvedBlock) {
+                    ConveyDesignSolvedLineRow(solvedLine, color)
                 }
             }
         }
