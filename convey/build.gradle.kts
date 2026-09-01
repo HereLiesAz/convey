@@ -63,6 +63,7 @@ kotlin {
                 implementation(compose.animationGraphics)
                 implementation(compose.ui)
                 implementation(compose.material3)
+                implementation(compose.components.resources)
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
