@@ -13,6 +13,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import compose.conveyance.ConveyKineticSentence
+import compose.conveyance.ConveyKineticText
+import compose.conveyance.ConveyLife
 import compose.conveyance.tokens.ConveyColor
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -42,6 +45,14 @@ import kotlin.math.roundToInt
  * branch yet; wiring true `wdth`/`wght` axes through `conveyTypeFontFamily` once it does is the
  * natural next step and should replace both approximations without changing this file's public
  * API shape.
+ *
+ * **Motion (§4.2 of the manifesto):** every [ConveyDesignLine] defaults to
+ * [ConveyDesignMotion.None] — static, solved layout only. A line may opt into
+ * [ConveyDesignMotion.Kinetic] (per-glyph, via [ConveyKineticText]) or
+ * [ConveyDesignMotion.Sentence] (per-word, verb-driven, via [ConveyKineticSentence]); this block
+ * never picks a motion for a line on its own. Solved size/weight/condensation/tracking apply
+ * identically regardless of motion — motion is layered on top of the solve, never a substitute
+ * for it.
  */
 enum class ConveyDesignLevel(internal val scaleStep: Int) {
     Title(4),
@@ -52,6 +63,22 @@ enum class ConveyDesignLevel(internal val scaleStep: Int) {
 }
 
 enum class ConveyDesignAlignment { Left, Right, Center, Justify }
+
+/**
+ * A line's motion, chosen from the framework's existing kinetic-typography vocabulary rather
+ * than a bespoke gesture (§4.2: "one motion grammar for text, not two"). Offered, never assumed
+ * — every line defaults to [None], and static `Body` text with nothing to teach or signal stays
+ * that way; picking a value here is a per-line choice a developer makes, not a default this
+ * block imposes on their behalf.
+ */
+enum class ConveyDesignMotion {
+    /** Plain, static text. The default for every line, [ConveyDesignLevel.Body] included. */
+    None,
+    /** Per-glyph motion via [ConveyKineticText] — a Tell-scale gesture, suited to short lines. */
+    Kinetic,
+    /** Per-word, verb-driven motion via [ConveyKineticSentence] — suited to sentence-length lines. */
+    Sentence,
+}
 
 /** A horizontal span within a [ConveyDesign] block's full width, in the solver's width units. */
 @Immutable
@@ -66,6 +93,10 @@ data class ConveyDesignLine(
     val alignment: ConveyDesignAlignment = ConveyDesignAlignment.Left,
     /** Rule 1 of the column-targeting tree (§11.5): an explicit column always wins. */
     val explicitColumn: ConveyDesignColumn? = null,
+    /** See [ConveyDesignMotion] — defaults to no motion at all. */
+    val motion: ConveyDesignMotion = ConveyDesignMotion.None,
+    /** Idle motion [ConveyKineticText] falls back to between Kinetic bursts; ignored otherwise. */
+    val idle: ConveyLife = ConveyLife.None,
 )
 
 /** The four levers the solver adjusts, in priority order: size, weight, condensation, tracking. */
@@ -318,17 +349,33 @@ fun ConveyDesign(
                 ConveyDesignAlignment.Center -> Alignment.Center
                 ConveyDesignAlignment.Justify -> Alignment.CenterStart
             }
+            val style = TextStyle(
+                color = color,
+                fontSize = solvedLine.axes.fontSizeSp.sp,
+                fontWeight = FontWeight(solvedLine.axes.weight.roundToInt().coerceIn(1, 1000)),
+                letterSpacing = solvedLine.axes.trackingSp.sp,
+            )
+            val condensed = Modifier.graphicsLayer(scaleX = solvedLine.axes.condensation / 100f)
+
             Box(Modifier.fillMaxWidth(), contentAlignment = boxAlignment) {
-                androidx.compose.material3.Text(
-                    text = solvedLine.line.text,
-                    style = TextStyle(
-                        color = color,
-                        fontSize = solvedLine.axes.fontSizeSp.sp,
-                        fontWeight = FontWeight(solvedLine.axes.weight.roundToInt().coerceIn(1, 1000)),
-                        letterSpacing = solvedLine.axes.trackingSp.sp,
-                    ),
-                    modifier = Modifier.graphicsLayer(scaleX = solvedLine.axes.condensation / 100f),
-                )
+                when (solvedLine.line.motion) {
+                    ConveyDesignMotion.None -> androidx.compose.material3.Text(
+                        text = solvedLine.line.text,
+                        style = style,
+                        modifier = condensed,
+                    )
+                    ConveyDesignMotion.Kinetic -> ConveyKineticText(
+                        text = solvedLine.line.text,
+                        idle = solvedLine.line.idle,
+                        style = style,
+                        modifier = condensed,
+                    )
+                    ConveyDesignMotion.Sentence -> ConveyKineticSentence(
+                        text = solvedLine.line.text,
+                        style = style,
+                        modifier = condensed,
+                    )
+                }
             }
         }
     }
