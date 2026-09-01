@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,6 +32,8 @@ import compose.conveyance.ConveySvoScene
 import compose.conveyance.ConveySystem
 import compose.conveyance.foundation.ConveyTopographicalLayout
 import compose.conveyance.tokens.ConveyColor
+import compose.conveyance.tokens.ConveyTypePreset
+import compose.conveyance.tokens.conveyTypeFontFamily
 
 /**
  * `./gradlew :android-dev-app:installDebug`, then the `:hotswap` tool (see its README) redefines
@@ -76,6 +79,14 @@ class MainActivity : ComponentActivity() {
                             .padding(24.dp),
                         verticalArrangement = Arrangement.spacedBy(32.dp),
                     ) {
+                        Text(
+                            text = "Azrienoch",
+                            style = TextStyle(
+                                color = ConveyColor.OnSurface,
+                                fontSize = 40.sp,
+                                fontFamily = conveyTypeFontFamily(ConveyTypePreset.Bold),
+                            ),
+                        )
                         ConveyKineticSentence(
                             text = "The cheetah sprints and pounces",
                             style = TextStyle(color = ConveyColor.OnSurface, fontSize = 26.sp),

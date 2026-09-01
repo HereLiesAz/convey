@@ -108,7 +108,20 @@ a scale/translate approximation of a shared-element transition, not yet visually
 a real display), and a first batch of concrete visual components: `ConveyListItem`, `ConveyCard`,
 `ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`, `ConveySegmentedControl`,
 `ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
-`tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`.
+`tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`.
+`ConveyType` is this library's official typeface — [Azrienoch](https://github.com/HereLiesAz/Azrienoch),
+a multiplex variable font (SIL OFL 1.1) exposing `wght`/`wdth`/`SERF`/`GRAD` as one family
+instead of a family per weight or style; the compiled font ships as a Compose resource
+(`src/commonMain/composeResources/font/azrienoch_vf.ttf`). Compose's `TextStyle` has no live
+`fontVariationSettings` field (confirmed against the actual class this project's pinned Compose
+Multiplatform version compiles against), so `conveyTypeFontFamily(variation)` bakes a
+`ConveyTypeVariation` (a fixed axis point — see `ConveyTypePreset` for named ones) into its own
+`FontFamily`; a live slider UI just calls it again each recomposition. See `docs/THIRD_PARTY_NOTICES.md`
+for the font's license (`docs/Azrienoch-OFL.txt` travels with it) and `ConveyType.kt`'s own doc
+comment for the honest per-platform caveat on the two custom axes (`SERF`/`GRAD`): this module
+compiles clean on `androidTarget`/`desktop`/`wasmJs` (and `iosArm64`/`iosSimulatorArm64` compile
+too, though no macOS host here to run them), but no target's actual rendered output has been
+visually verified in this environment — `wght`/`wdth` are safe everywhere regardless.
 
 ## Dev loop
 

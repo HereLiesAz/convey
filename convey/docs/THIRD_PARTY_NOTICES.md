@@ -53,3 +53,14 @@ Karin Kipper-Schuler).
 
 Source: `https://verbs.colorado.edu/verbnet/`, via the NLTK data mirror at
 `https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/verbnet3.zip`.
+
+## Azrienoch (typeface)
+
+`src/commonMain/composeResources/font/azrienoch_vf.ttf` is the compiled variable font from
+[HereLiesAz/Azrienoch](https://github.com/HereLiesAz/Azrienoch) — this library's official
+typeface (`tokens/ConveyType.kt`), used unmodified. Azrienoch is a Modified Version of
+[Roboto Flex](https://github.com/googlefonts/roboto-flex) and is licensed under the
+[SIL Open Font License, Version 1.1](https://scripts.sil.org/OFL) — reproduced verbatim in
+`docs/Azrienoch-OFL.txt`, which travels with the font file wherever it's redistributed.
+Roboto Flex's own license and authors are named inside that same OFL notice, per Azrienoch's
+own `README.md`.
