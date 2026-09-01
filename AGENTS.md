@@ -109,7 +109,17 @@ a real display), `ConveyDesign`/`ConveyDesignPage` (Part XI of the Manifesto, "T
 Block" — automatic composition for semantic-level text: `ConveyDesignSolver` adjusts
 size/weight/condensation/tracking so a block's (or, via `ConveyDesignPage`, a whole page's —
 §11.7's cross-block propagation) silhouette reads as balanced; condensation and weight render
-through real Azrienoch `wdth`/`wght` axes via `conveyTypeFontFamily`, not an approximation),
+through real Azrienoch `wdth`/`wght` axes via `conveyTypeFontFamily`, not an approximation).
+`ConveyDesignSolver`'s functions default to `naturalWidth`'s fixed per-character advance-width
+approximation (unchanged for `ConveyDesignSolverTest`'s own direct calls) but take an optional
+trailing `ConveyDesignMeasure` to swap that out — `ConveyDesign`/`ConveyDesignPage` default
+theirs to `rememberConveyDesignMeasure()`, a real `TextMeasurer`-backed one that varies
+`fontSize`/`letterSpacing` for real measurement on the (dominant, tried-first) size lever, with
+condensation applied afterward as a linear scale correction rather than a second real
+measurement — rebuilding a `FontFamily` at a different `wdth` per binary-search candidate would
+need `conveyTypeFontFamily`'s `@Composable`/async-loaded `Font()` resolved fresh each time,
+which can't run synchronously inside a solver loop; see that function's own doc comment for the
+full accounting,
 `ConveyDecoration` (`ConveyActText`/`ConveyDecoratedText` — Part IV §4.2, "Text as an Act": the
 Decoration channel, a persistent marker on text that is itself an Act, plus a one-time Tell
 burst through the kinetic-typography engine for an unpracticed instance — `ConveyDesignLine`'s

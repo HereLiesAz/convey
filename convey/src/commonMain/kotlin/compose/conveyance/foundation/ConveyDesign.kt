@@ -10,7 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,13 +45,21 @@ import kotlin.math.abs
  * column-targeting and mirror-fallback logic rather than a separate mechanism.
  *
  * **Implementation status:** the solver ([ConveyDesignSolver]) is pure, platform-independent
- * math and is exercised directly by `ConveyDesignSolverTest` — it does not depend on this file's
- * Composable wrappers. They take the available width as an explicit `fullWidthSp` parameter (in
- * the same approximate "advance-width units" the solver uses) rather than measuring the actual
- * rendered width of content via a `TextMeasurer` — real glyph metrics per platform/font are real
- * future work, not yet done here. Condensation and weight now render through real Azrienoch
- * variable-font axes (`wdth`/`wght`, via [conveyTypeFontFamily]) rather than a `graphicsLayer`
- * approximation, now that `ConveyType`'s Azrienoch integration has landed.
+ * math and defaults everywhere to [ConveyDesignSolver.naturalWidth]'s fixed per-character
+ * advance-width approximation — unchanged for `ConveyDesignSolverTest`'s own direct calls, which
+ * have no [androidx.compose.ui.text.TextMeasurer] to measure against. [ConveyDesign]/
+ * [ConveyDesignPage] instead measure against a real [rememberConveyDesignMeasure]: a
+ * `TextMeasurer` bound to Azrienoch at `wdth=100`, varying only `fontSize`/`letterSpacing` per
+ * call (both cheap — no new [FontFamily][androidx.compose.ui.text.font.FontFamily] instance
+ * needed) for the size lever's binary search, with the condensation lever applied as a linear
+ * scale correction on top rather than a second real measurement. That's a genuine, honestly
+ * scoped limitation, not an oversight: rebuilding a `FontFamily` at a different `wdth` per
+ * candidate would need `conveyTypeFontFamily`'s underlying `Font()` resolved fresh each time,
+ * which is `@Composable`/async-loaded and cannot run synchronously inside a solver's binary
+ * search. See [rememberConveyDesignMeasure]'s own doc for the full accounting. Condensation and
+ * weight render through real Azrienoch variable-font axes (`wdth`/`wght`, via
+ * [conveyTypeFontFamily]) rather than a `graphicsLayer` approximation, now that `ConveyType`'s
+ * Azrienoch integration has landed.
  *
  * **Motion (§4.2 of the manifesto):** every [ConveyDesignLine] defaults to
  * [ConveyDesignMotion.None] — static, solved layout only. A line may opt into
@@ -132,6 +142,13 @@ data class ConveyDesignSolvedLine(
 )
 
 /**
+ * A pluggable width measurement for §11.4's column-fill solve. Defaults everywhere to
+ * [ConveyDesignSolver.naturalWidth] (the fixed per-character advance-width approximation) — see
+ * [rememberConveyDesignMeasure] for a real, `TextMeasurer`-based one.
+ */
+typealias ConveyDesignMeasure = (text: String, fontSizeSp: Float, condensation: Float, trackingSp: Float) -> Float
+
+/**
  * Pure, platform-independent solver math for §11.2–§11.7 of the Design Block spec. Kept free of
  * any Composable/UI dependency so it is directly unit-testable.
  */
@@ -201,25 +218,26 @@ object ConveyDesignSolver {
         minCondensation: Float = MIN_CONDENSATION,
         maxCondensation: Float = 100f,
         maxTrackingSp: Float = 2f,
+        measure: ConveyDesignMeasure = { text2, size2, condensation2, tracking2 -> naturalWidth(text2, size2, condensation2, tracking2) },
     ): ConveyDesignAxes? {
         val weight = nominal.weight
 
         val size = binarySearchForTarget(minSizeSp, maxSizeSp, targetWidth) { s ->
-            naturalWidth(text, s, nominal.condensation, nominal.trackingSp)
+            measure(text, s, nominal.condensation, nominal.trackingSp)
         }
-        var width = naturalWidth(text, size, nominal.condensation, nominal.trackingSp)
+        var width = measure(text, size, nominal.condensation, nominal.trackingSp)
         if (closeEnough(width, targetWidth)) return ConveyDesignAxes(size, weight, nominal.condensation, nominal.trackingSp)
 
         val condensation = binarySearchForTarget(minCondensation, maxCondensation, targetWidth) { c ->
-            naturalWidth(text, size, c, nominal.trackingSp)
+            measure(text, size, c, nominal.trackingSp)
         }
-        width = naturalWidth(text, size, condensation, nominal.trackingSp)
+        width = measure(text, size, condensation, nominal.trackingSp)
         if (closeEnough(width, targetWidth)) return ConveyDesignAxes(size, weight, condensation, nominal.trackingSp)
 
         val remaining = targetWidth - width
         val gaps = (text.length - 1).coerceAtLeast(1)
         val tracking = (nominal.trackingSp + remaining / gaps).coerceIn(-maxTrackingSp, maxTrackingSp)
-        width = naturalWidth(text, size, condensation, tracking)
+        width = measure(text, size, condensation, tracking)
 
         return if (closeEnough(width, targetWidth, toleranceRatio = 0.12f)) {
             ConveyDesignAxes(size, weight, condensation, tracking)
@@ -281,13 +299,18 @@ object ConveyDesignSolver {
      * nominal axes, carves the column grid from its own natural width + alignment); every other
      * line without its own [ConveyDesignLine.explicitColumn] inherits a target column from it
      * (§11.5) and either fills it (column-fill mode) or, if too narrow even at every lever's
-     * extreme, mirrors the defining line's whole shape to the opposite edge (§11.6).
+     * extreme, mirrors the defining line's whole shape to the opposite edge (§11.6). [measure]
+     * defaults to [naturalWidth]'s fixed advance-width approximation; pass a real one (see
+     * [rememberConveyDesignMeasure]) to size against actual rendered glyph metrics instead —
+     * column carving and column-fill both use whichever is given, so the two stay consistent
+     * with each other.
      */
     fun solveBlock(
         lines: List<ConveyDesignLine>,
         fullWidth: Float,
         baseSizeSp: Float = DEFAULT_BASE_SIZE_SP,
         ratio: Float = DEFAULT_RATIO,
+        measure: ConveyDesignMeasure = { text2, size2, condensation2, tracking2 -> naturalWidth(text2, size2, condensation2, tracking2) },
     ): List<ConveyDesignSolvedLine> {
         if (lines.isEmpty()) return emptyList()
 
@@ -299,7 +322,7 @@ object ConveyDesignSolver {
                 trackingSp = 0f,
             )
         }
-        val naturalWidths = lines.mapIndexed { i, line -> naturalWidth(line.text, nominals[i].fontSizeSp) }
+        val naturalWidths = lines.mapIndexed { i, line -> measure(line.text, nominals[i].fontSizeSp, 100f, 0f) }
 
         val definingLine = lines[0]
         val definingWidth = naturalWidths[0]
@@ -326,12 +349,12 @@ object ConveyDesignSolver {
                 continue
             }
 
-            val fit = solveToWidth(line.text, nominal, target.width)
+            val fit = solveToWidth(line.text, nominal, target.width, measure = measure)
             solved.add(
                 if (fit == null) {
                     ConveyDesignSolvedLine(line, nominals[0], definingWidth, mirroredDefiningColumn, mirrored = true)
                 } else {
-                    ConveyDesignSolvedLine(line, fit, naturalWidth(line.text, fit.fontSizeSp, fit.condensation, fit.trackingSp), target, mirrored = false)
+                    ConveyDesignSolvedLine(line, fit, measure(line.text, fit.fontSizeSp, fit.condensation, fit.trackingSp), target, mirrored = false)
                 }
             )
         }
@@ -340,8 +363,14 @@ object ConveyDesignSolver {
     }
 
     /** Solves [lines] against [column]'s own width, then offsets every result back into [column]'s absolute position — the block-level counterpart of a line filling an inherited column. */
-    private fun solveBlockWithinColumn(lines: List<ConveyDesignLine>, column: ConveyDesignColumn, baseSizeSp: Float, ratio: Float): List<ConveyDesignSolvedLine> {
-        val relative = solveBlock(lines, column.width, baseSizeSp, ratio)
+    private fun solveBlockWithinColumn(
+        lines: List<ConveyDesignLine>,
+        column: ConveyDesignColumn,
+        baseSizeSp: Float,
+        ratio: Float,
+        measure: ConveyDesignMeasure,
+    ): List<ConveyDesignSolvedLine> {
+        val relative = solveBlock(lines, column.width, baseSizeSp, ratio, measure)
         return relative.map { it.copy(column = ConveyDesignColumn(column.start + it.column.start, column.start + it.column.end)) }
     }
 
@@ -364,11 +393,12 @@ object ConveyDesignSolver {
         fullWidth: Float,
         baseSizeSp: Float = DEFAULT_BASE_SIZE_SP,
         ratio: Float = DEFAULT_RATIO,
+        measure: ConveyDesignMeasure = { text2, size2, condensation2, tracking2 -> naturalWidth(text2, size2, condensation2, tracking2) },
     ): List<List<ConveyDesignSolvedLine>> {
         if (blocks.isEmpty()) return emptyList()
 
         val solvedBlocks = ArrayList<List<ConveyDesignSolvedLine>>(blocks.size)
-        var referenceBlock = solveBlock(blocks[0], fullWidth, baseSizeSp, ratio)
+        var referenceBlock = solveBlock(blocks[0], fullWidth, baseSizeSp, ratio, measure)
         solvedBlocks.add(referenceBlock)
         var accumulatedRightEdge = referenceBlock.maxOf { it.column.end }
         var accumulatedHeight = referenceBlock.sumOf { it.axes.fontSizeSp.toDouble() }.toFloat()
@@ -378,7 +408,7 @@ object ConveyDesignSolver {
             val spansFull = accumulatedRightEdge >= fullWidth * 0.999f
 
             var solved = if (spansFull) {
-                solveBlock(blockLines, fullWidth, baseSizeSp, ratio)
+                solveBlock(blockLines, fullWidth, baseSizeSp, ratio, measure)
             } else {
                 val anchorLine = referenceBlock.first().line
                 val anchorColumn = referenceBlock.first().column
@@ -386,9 +416,9 @@ object ConveyDesignSolver {
                 val tooNarrow = target == null || target.width < fullWidth * 0.15f
                 if (tooNarrow) {
                     val mirroredColumn = boundingColumn(referenceBlock).let { ConveyDesignColumn(fullWidth - it.end, fullWidth - it.start) }
-                    solveBlockWithinColumn(blockLines, mirroredColumn, baseSizeSp, ratio).map { it.copy(mirrored = true) }
+                    solveBlockWithinColumn(blockLines, mirroredColumn, baseSizeSp, ratio, measure).map { it.copy(mirrored = true) }
                 } else {
-                    solveBlockWithinColumn(blockLines, target!!, baseSizeSp, ratio)
+                    solveBlockWithinColumn(blockLines, target!!, baseSizeSp, ratio, measure)
                 }
             }
 
@@ -411,6 +441,49 @@ object ConveyDesignSolver {
         }
 
         return solvedBlocks
+    }
+}
+
+/**
+ * A real, [androidx.compose.ui.text.TextMeasurer]-backed [ConveyDesignMeasure]: binds one
+ * [androidx.compose.ui.text.font.FontFamily] instance at `wdth=100` (Azrienoch's neutral width)
+ * and varies only `fontSize`/`letterSpacing` per call -- both cheap, since neither needs the
+ * `FontFamily` rebuilt -- for the size lever's binary search, which the solve order (§11.4)
+ * tries first and is what most lines actually converge on. Condensation is applied afterward as
+ * a linear scale correction on the real-measured width rather than a second, per-candidate real
+ * measurement.
+ *
+ * That split is a genuine, honestly scoped limitation, not an oversight: rebuilding a
+ * `FontFamily` at a different `wdth` per candidate would need [conveyTypeFontFamily]'s
+ * underlying `Font()` resolved fresh each time, which is confirmed (via bytecode inspection of
+ * the actual `org.jetbrains.compose.resources.Font(...)` signature this project's pinned Compose
+ * Multiplatform version compiles against) to take a `Composer` parameter and resolve its font
+ * bytes through an internal async cache -- it cannot run synchronously inside a solver's binary
+ * search. Size becomes genuinely real measurement; condensation stays an approximation, now a
+ * documented one layered on real data rather than synthetic from the first character.
+ *
+ * Returns width in dp-equivalent units (`pixels / density`) to stay in the same rough scale
+ * `fullWidthSp`'s callers already pass — itself an approximation once `fontScale != 1`, since dp
+ * and sp diverge exactly there; stated here rather than silently assumed away.
+ */
+@Composable
+fun rememberConveyDesignMeasure(): ConveyDesignMeasure {
+    val textMeasurer = rememberTextMeasurer()
+    val baseFamily = conveyTypeFontFamily(ConveyTypeVariation(width = 100f))
+    val density = LocalDensity.current
+    return remember(textMeasurer, baseFamily, density) {
+        { text: String, fontSizeSp: Float, condensation: Float, trackingSp: Float ->
+            if (text.isEmpty()) {
+                0f
+            } else {
+                val result = textMeasurer.measure(
+                    text = text,
+                    style = TextStyle(fontSize = fontSizeSp.sp, fontFamily = baseFamily, letterSpacing = trackingSp.sp),
+                )
+                val widthDpEquivalent = result.size.width.toFloat() / density.density
+                widthDpEquivalent * (condensation / 100f)
+            }
+        }
     }
 }
 
@@ -466,9 +539,10 @@ fun ConveyDesign(
     color: Color = ConveyColor.OnSurface,
     baseSizeSp: Float = ConveyDesignSolver.DEFAULT_BASE_SIZE_SP,
     ratio: Float = ConveyDesignSolver.DEFAULT_RATIO,
+    measure: ConveyDesignMeasure = rememberConveyDesignMeasure(),
 ) {
-    val solved = remember(lines, fullWidthSp, baseSizeSp, ratio) {
-        ConveyDesignSolver.solveBlock(lines, fullWidthSp, baseSizeSp, ratio)
+    val solved = remember(lines, fullWidthSp, baseSizeSp, ratio, measure) {
+        ConveyDesignSolver.solveBlock(lines, fullWidthSp, baseSizeSp, ratio, measure)
     }
     Column(modifier = modifier.fillMaxWidth()) {
         for (solvedLine in solved) {
@@ -490,9 +564,10 @@ fun ConveyDesignPage(
     baseSizeSp: Float = ConveyDesignSolver.DEFAULT_BASE_SIZE_SP,
     ratio: Float = ConveyDesignSolver.DEFAULT_RATIO,
     blockSpacing: Dp = 24.dp,
+    measure: ConveyDesignMeasure = rememberConveyDesignMeasure(),
 ) {
-    val solvedBlocks = remember(blocks, fullWidthSp, baseSizeSp, ratio) {
-        ConveyDesignSolver.solvePage(blocks, fullWidthSp, baseSizeSp, ratio)
+    val solvedBlocks = remember(blocks, fullWidthSp, baseSizeSp, ratio, measure) {
+        ConveyDesignSolver.solvePage(blocks, fullWidthSp, baseSizeSp, ratio, measure)
     }
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(blockSpacing)) {
         for (solvedBlock in solvedBlocks) {
