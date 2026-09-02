@@ -123,10 +123,22 @@ full accounting,
 `ConveyDecoration` (`ConveyActText`/`ConveyDecoratedText` — Part IV §4.2, "Text as an Act": the
 Decoration channel, a persistent marker on text that is itself an Act, plus a one-time Tell
 burst through the kinetic-typography engine for an unpracticed instance — `ConveyDesignLine`'s
-`isAct` wires this straight into a `DESIGN` block's own lines), and a first batch of concrete
-visual components: `ConveyListItem`, `ConveyCard`, `ConveyAvatar`, `ConveyBadge`, `ConveyChip`,
-`ConveySwitch`, `ConveySegmentedControl`, `ConveyTopBar`, and `ConveyNavigationBar` (see
-LIBRARY.md for each).
+`isAct` wires this straight into a `DESIGN` block's own lines), `ConveyScrollParallax` (the
+scroll-linked-animation primitive Part XII calls for — neither Compose nor this library had a
+way to continuously map scroll position to a transform before this; `Modifier.conveyScrollParallax`
+reads live element position in the draw phase via `graphicsLayer`, so a scroll gesture re-layers
+affected elements without recomposing them), `ConveyBody` (Part XII of the Manifesto, "The Body
+Block" — `DESIGN`'s sibling for body-level prose: `Paragraph`/`Quote` lines are classified
+word-by-word by the existing `ConveyVerbLexicon`/`ConveyNounLexicon` engine, and that one pass
+drives both emotive idle motion, via the existing `ConveyVerbClass.toConveyLife()` mapping
+`ConveyKineticSentence` already uses, and a fluid Azrienoch `wght` value via
+`ConveyBodyClassifier`'s own ratio-tool weight-delta buckets — applied to every line inside the
+block, mandatory rather than offered, since prose read at length that sometimes moves and
+sometimes doesn't reads as broken. `ConveyBody` owns its own scroll container and every line
+performs a mandatory scroll-linked entrance via `conveyScrollParallax`, direction keyed to role:
+`Paragraph` horizontal, `Quote` vertical), and a first batch of concrete visual components:
+`ConveyListItem`, `ConveyCard`, `ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`,
+`ConveySegmentedControl`, `ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`.
 `ConveyType` is this library's official typeface — [Azrienoch](https://github.com/HereLiesAz/Azrienoch),
 a multiplex variable font (SIL OFL 1.1) exposing `wght`/`wdth`/`SERF`/`GRAD` as one family
