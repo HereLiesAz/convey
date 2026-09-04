@@ -1,18 +1,22 @@
 package compose.conveyance.dev
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -37,6 +41,7 @@ import compose.conveyance.foundation.ConveyBodyLine
 import compose.conveyance.foundation.ConveyBodyRole
 import compose.conveyance.foundation.ConveyTopographicalLayout
 import compose.conveyance.tokens.ConveyColor
+import compose.conveyance.tokens.ConveyExpressiveShape
 import compose.conveyance.tokens.ConveyTypeAxis
 import compose.conveyance.tokens.ConveyTypeVariation
 import compose.conveyance.tokens.conveyTypeFontFamily
@@ -124,6 +129,22 @@ fun main() = application {
                     modifier = Modifier.fillMaxWidth().height(220.dp),
                     color = ConveyColor.OnSurface,
                 )
+                Text(
+                    text = "ConveyExpressiveShape -- the real M3 Expressive polygon vocabulary",
+                    style = TextStyle(color = ConveyColor.OnSurfaceVariant, fontSize = 14.sp),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    for (name in listOf("cookie9Sided", "sunny", "pill", "heart", "clover4Leaf", "burst")) {
+                        var count by remember { mutableStateOf(0) }
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(ConveyExpressiveShape.shapeOf(name))
+                                .background(if (count % 2 == 0) ConveyColor.PrimaryContainer else ConveyColor.TertiaryContainer)
+                                .clickable { count++ },
+                        )
+                    }
+                }
             }
         }
     }
