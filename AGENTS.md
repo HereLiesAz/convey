@@ -150,7 +150,31 @@ output, e.g. "sprints"/"chasing" (heavy-verb bucket) rendering bolder than "cons
 "weighing" (cognition-verb bucket) in the same line), and a first batch of concrete visual components:
 `ConveyListItem`, `ConveyCard`, `ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`,
 `ConveySegmentedControl`, `ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
-`tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`.
+`tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`. `ConveyColor`'s
+reference palette is the real Material Design 3 baseline dark color scheme (seed `#6750A4`), not
+an invented hue set — deliberate parity with the wider Conveyance ecosystem's own
+[`conveyance-expressive`](https://github.com/HereLiesAz/conveyance-expressive) composable-set
+library's `ExpressiveRole` container colors, one of that ecosystem's five real, physically/
+spec-grounded style systems (`-h2g2`, `-expressive`, `-liquid`, `-bacterium`, `-space`).
+`SurfaceContainer*` are computed by alpha-blending `Primary` over `Surface` at M3's own
+per-elevation overlay opacities rather than hand-picked hex literals. `ConveyExpressiveShape`
+(also in `tokens/`) is the real M3 Expressive 35-polygon `MaterialShapes` vocabulary, ported
+directly from Google's own AOSP `MaterialShapes.kt` source (Apache 2.0, see
+`docs/THIRD_PARTY_NOTICES.md`) rather than depended on through the `androidx.compose.material3`
+artifact directly — that artifact ships M3 Expressive only on a much newer Compose/Kotlin
+toolchain than this project's own proven pin, and a second, differently-versioned material3
+alongside the JetBrains Compose Multiplatform `compose.material3` this module already depends
+on risks real classpath conflicts. This port depends only on `androidx.graphics:graphics-shapes`
+(the lower-level KMP geometry library `MaterialShapes` itself is built on). That dependency's
+`wasmJs` variant is compiled by Kotlin 2.2.0 (confirmed via its klib manifest) and fails to link
+against this project's pinned Kotlin 2.1.20 with a blanket "unresolved reference" — verified for
+real, not assumed: `:convey:compileKotlinWasmJs` fails this way with the dependency in
+`commonMain`. So `ConveyExpressiveShape.kt` and its dependency live in a new `expressiveShapeMain`
+intermediate source set that only `androidMain`/`desktopMain` depend on (iOS is left out too:
+its klibs carry the same version coupling and there's no macOS host here to verify either way).
+Wired into both dev galleries (`dev-app`/`android-dev-app`) as a real, visible clip-shape demo —
+not just inert tokens — and actually visually verified: see "Dev loop" below for the same
+Xvfb/`java.awt.Robot` screenshot method used for `ConveyBody`.
 `ConveyType` is this library's official typeface — [Azrienoch](https://github.com/HereLiesAz/Azrienoch),
 a multiplex variable font (SIL OFL 1.1) exposing `wght`/`wdth`/`SERF`/`GRAD` as one family
 instead of a family per weight or style; the compiled font ships as a Compose resource

@@ -9,11 +9,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -23,6 +26,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -37,6 +41,7 @@ import compose.conveyance.foundation.ConveyBodyLine
 import compose.conveyance.foundation.ConveyBodyRole
 import compose.conveyance.foundation.ConveyTopographicalLayout
 import compose.conveyance.tokens.ConveyColor
+import compose.conveyance.tokens.ConveyExpressiveShape
 import compose.conveyance.tokens.ConveyTypePreset
 import compose.conveyance.tokens.conveyTypeFontFamily
 
@@ -119,6 +124,16 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth().height(220.dp),
                             color = ConveyColor.OnSurface,
                         )
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            for (name in listOf("cookie9Sided", "sunny", "pill", "heart")) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(ConveyExpressiveShape.shapeOf(name))
+                                        .background(ConveyColor.PrimaryContainer),
+                                )
+                            }
+                        }
                     }
                 }
             }

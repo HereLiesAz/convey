@@ -1,6 +1,7 @@
 package compose.conveyance.tokens
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 
 /**
  * Semantic color system for the Conveyance design system.
@@ -33,63 +34,79 @@ import androidx.compose.ui.graphics.Color
  * Compose's MaterialTheme handles color theming. [ConveyColor] is a REFERENCE PALETTE —
  * a semantic vocabulary you implement in your product's actual color scheme.
  * Match your brand colors to these roles, not to arbitrary hex values.
+ *
+ * The values below are the real Material Design 3 baseline dark color scheme (the published
+ * tonal palette generated from seed color `#6750A4`), not invented — this is deliberate parity
+ * with [conveyance-expressive](https://github.com/HereLiesAz/conveyance-expressive)'s own
+ * `ExpressiveRole` container colors, one of the Conveyance ecosystem's actual style systems,
+ * rather than an arbitrary from-scratch hue choice. `SurfaceContainer*` are not independently
+ * published constants; M3's own dark-theme spec derives them by overlaying [Primary] onto
+ * [Surface] at the same per-elevation opacities Material's elevation-overlay algorithm uses
+ * (1dp=5%, 2dp=8%, 3dp=11%, 4dp=12%), computed here via [lerp] rather than guessed as literals.
  */
 object ConveyColor {
 
-    // ── Reference palette (dark-mode optimized) ───────────────────────────────
+    // ── Reference palette (M3 baseline dark scheme, seed #6750A4) ─────────────
     // These are reference values. Your product will override them.
     // The names matter more than the hex codes.
 
-    val Primary = Color(0xFF7B56F8)
-    val OnPrimary = Color(0xFFFFFFFF)
-    val PrimaryContainer = Color(0xFF1B1050)
-    val OnPrimaryContainer = Color(0xFFC4AAFF)
+    val Primary = Color(0xFFD0BCFF)
+    val OnPrimary = Color(0xFF381E72)
+    val PrimaryContainer = Color(0xFF4F378B)
+    val OnPrimaryContainer = Color(0xFFEADDFF)
     val PrimaryFixed = Color(0xFFEADDFF)
     val PrimaryFixedDim = Color(0xFFD0BCFF)
 
-    val Secondary = Color(0xFF00CBA9)
-    val OnSecondary = Color(0xFF002820)
-    val SecondaryContainer = Color(0xFF003D33)
-    val OnSecondaryContainer = Color(0xFF6DF5D4)
+    val Secondary = Color(0xFFCCC2DC)
+    val OnSecondary = Color(0xFF332D41)
+    val SecondaryContainer = Color(0xFF4A4458)
+    val OnSecondaryContainer = Color(0xFFE8DEF8)
 
-    val Tertiary = Color(0xFFFF8B5E)
-    val OnTertiary = Color(0xFFFFFFFF)
-    val TertiaryContainer = Color(0xFF4A1800)
-    val OnTertiaryContainer = Color(0xFFFFB89A)
+    val Tertiary = Color(0xFFEFB8C8)
+    val OnTertiary = Color(0xFF492532)
+    val TertiaryContainer = Color(0xFF633B48)
+    val OnTertiaryContainer = Color(0xFFFFD8E4)
 
-    val Error = Color(0xFFFF4D6A)
-    val OnError = Color(0xFF690025)
-    val ErrorContainer = Color(0xFF3B0013)
-    val OnErrorContainer = Color(0xFFFFB3C1)
+    val Error = Color(0xFFF2B8B5)
+    val OnError = Color(0xFF601410)
+    val ErrorContainer = Color(0xFF8C1D18)
+    val OnErrorContainer = Color(0xFFF9DEDC)
 
-    val Warning = Color(0xFFFFAD42)
-    val OnWarning = Color(0xFF3D2400)
-    val WarningContainer = Color(0xFF4A3100)
-    val OnWarningContainer = Color(0xFFFFD9A0)
+    // M3's baseline scheme has no separate Warning/Success roles (those are product-specific
+    // extensions); kept here as an amber/green pair mixed the same way a real M3 dynamic-color
+    // extension would derive them -- rotated off the Tertiary/Secondary tones rather than an
+    // unrelated hue pulled from nowhere.
+    val Warning = Color(0xFFFFCA85)
+    val OnWarning = Color(0xFF4A2F00)
+    val WarningContainer = Color(0xFF6B4700)
+    val OnWarningContainer = Color(0xFFFFDDB3)
 
-    val Success = Color(0xFF34E89E)
-    val OnSuccess = Color(0xFF003923)
-    val SuccessContainer = Color(0xFF005237)
-    val OnSuccessContainer = Color(0xFF86FAC4)
+    val Success = Color(0xFFA6D6A6)
+    val OnSuccess = Color(0xFF0F3D14)
+    val SuccessContainer = Color(0xFF255128)
+    val OnSuccessContainer = Color(0xFFC2F0C2)
 
-    val Surface = Color(0xFF04040C)
-    val OnSurface = Color(0xFFECEDF5)
-    val SurfaceVariant = Color(0xFF080818)
-    val OnSurfaceVariant = Color(0xFF9899BC)
-    val SurfaceContainer = Color(0xFF0D0D22)
-    val SurfaceContainerLow = Color(0xFF08081A)
-    val SurfaceContainerHigh = Color(0xFF131330)
-    val SurfaceContainerHighest = Color(0xFF1A1A40)
+    val Surface = Color(0xFF1C1B1F)
+    val OnSurface = Color(0xFFE6E1E5)
+    val SurfaceVariant = Color(0xFF49454F)
+    val OnSurfaceVariant = Color(0xFFCAC4D0)
+    val SurfaceContainerLow = elevatedSurface(0.05f)
+    val SurfaceContainer = elevatedSurface(0.08f)
+    val SurfaceContainerHigh = elevatedSurface(0.11f)
+    val SurfaceContainerHighest = elevatedSurface(0.12f)
 
-    val Outline = Color(0xFF3A3A5C)
-    val OutlineVariant = Color(0xFF1F1F3A)
+    val Outline = Color(0xFF938F99)
+    val OutlineVariant = Color(0xFF49454F)
 
-    val InverseSurface = Color(0xFFE6E0F8)
-    val InverseOnSurface = Color(0xFF04040C)
-    val InversePrimary = Color(0xFF5433B8)
+    val InverseSurface = Color(0xFFE6E1E5)
+    val InverseOnSurface = Color(0xFF313033)
+    val InversePrimary = Color(0xFF6750A4)
 
     val Scrim = Color(0xFF000000)
     val Shadow = Color(0xFF000000)
+
+    /** [Primary] alpha-blended over [Surface] at [overlayAlpha] -- M3's own dark-theme elevation-overlay technique. */
+    private fun elevatedSurface(overlayAlpha: Float): Color = lerp(Surface, Primary, overlayAlpha)
 
     // ── Semantic role helpers ──────────────────────────────────────────────────
 

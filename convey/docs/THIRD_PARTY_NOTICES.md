@@ -54,6 +54,31 @@ Karin Kipper-Schuler).
 Source: `https://verbs.colorado.edu/verbnet/`, via the NLTK data mirror at
 `https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/verbnet3.zip`.
 
+## Material 3 Expressive shape geometry
+
+`tokens/ConveyExpressiveShape.kt`'s 35 named polygon builders (`circle`, `pill`, `cookie9Sided`,
+`heart`, ...) are a direct port of Google's own
+[`MaterialShapes.kt`](https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/MaterialShapes.kt)
+from the `androidx.compose.material3` source tree (AOSP), including its exact numeric vertex/
+rounding parameters — not approximated or reconstructed from visual reference. Licensed under the
+Apache License, Version 2.0:
+
+> Copyright 2024 The Android Open Source Project
+>
+> Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+> except in compliance with the License. You may obtain a copy of the License at
+>
+>     http://www.apache.org/licenses/LICENSE-2.0
+>
+> Unless required by applicable law or agreed to in writing, software distributed under the
+> License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+> either express or implied. See the License for the specific language governing permissions and
+> limitations under the License.
+
+Ported directly against `androidx.graphics:graphics-shapes` (also Apache 2.0) rather than through
+the `androidx.compose.material3` artifact itself — see `ConveyExpressiveShape.kt`'s own doc
+comment and `AGENTS.md` for why.
+
 ## Azrienoch (typeface)
 
 `src/commonMain/composeResources/font/azrienoch_vf.ttf` is the compiled variable font from

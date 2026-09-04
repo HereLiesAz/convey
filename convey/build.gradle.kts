@@ -75,13 +75,35 @@ kotlin {
             }
         }
 
+        // `androidx.graphics:graphics-shapes` (ConveyExpressiveShape.kt's dependency, the real
+        // M3 Expressive polygon geometry) publishes a wasmJs klib compiled by Kotlin 2.2.0
+        // (confirmed via its klib manifest's `compiler_version`), which fails to link against
+        // this project's pinned Kotlin 2.1.20 compiler with a blanket "Unresolved reference"
+        // across the whole androidx.graphics.shapes package -- verified for real, not assumed:
+        // `:convey:compileKotlinWasmJs` fails this way with the dependency in commonMain, while
+        // `:convey:compileKotlinDesktop`/`compileDebugKotlinAndroid` compile clean against the
+        // same dependency (JVM classfiles don't have this klib-ABI version coupling). So this
+        // source set carries `graphics-shapes` and ConveyExpressiveShape.kt for android+desktop
+        // only, until this project's Kotlin pin can move to 2.2.0+ -- see AGENTS.md's own note
+        // on the wasmJs gap. iOS is left out too: its klibs are equally version-coupled and this
+        // sandbox has no macOS host to actually verify either way, so it's not claimed here.
+        val expressiveShapeMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation("androidx.graphics:graphics-shapes:1.1.0")
+                implementation("androidx.collection:collection:1.5.0")
+            }
+        }
+
         val androidMain by getting {
+            dependsOn(expressiveShapeMain)
             dependencies {
                 implementation(libs.kotlinx.coroutines.android)
             }
         }
 
         val desktopMain by getting {
+            dependsOn(expressiveShapeMain)
             dependencies {
                 implementation(compose.desktop.currentOs)
             }
