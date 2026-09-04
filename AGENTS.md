@@ -40,6 +40,12 @@ From the repo root:
   without one, the `wasmJsBrowserTest` task fails even though compilation itself succeeds. CI and
   most sandboxed environments may not have one — don't attribute a wasmJs test failure to a code
   change without first checking whether a browser binary is actually available.
+  `convey/karma.config.d/no-sandbox.js` adds a custom `ChromeHeadlessNoSandbox` Karma launcher
+  (`--no-sandbox --disable-gpu --disable-dev-shm-usage`) so the suite also runs inside a
+  container with no D-Bus session and no user namespaces — set `CHROME_BIN` to point at whatever
+  Chromium/Chrome binary is available (e.g. Playwright's bundled Chromium) and run
+  `./gradlew :convey:wasmJsBrowserTest`. Verified for real in this repo: 77/77 tests pass this
+  way against a Playwright-provisioned Chromium with no display and no D-Bus.
 - CI (`.github/workflows/build.yml`) runs exactly `./gradlew :convey:build --stacktrace` on
   Ubuntu with JDK 21 and the Android SDK packages above — treat that workflow as the source of
   truth for how this project is built if this document and it ever disagree.
@@ -136,7 +142,12 @@ drives both emotive idle motion, via the existing `ConveyVerbClass.toConveyLife(
 block, mandatory rather than offered, since prose read at length that sometimes moves and
 sometimes doesn't reads as broken. `ConveyBody` owns its own scroll container and every line
 performs a mandatory scroll-linked entrance via `conveyScrollParallax`, direction keyed to role:
-`Paragraph` horizontal, `Quote` vertical), and a first batch of concrete visual components:
+`Paragraph` horizontal, `Quote` vertical. Wired into both dev galleries (`dev-app`/
+`android-dev-app`, see "Dev loop" below) and actually visually verified rendering in this
+environment — Compose Desktop under Xvfb with software Skiko rendering (no GL context available
+here), screenshotted via `java.awt.Robot`: per-word weight variation is visible in the captured
+output, e.g. "sprints"/"chasing" (heavy-verb bucket) rendering bolder than "considered"/
+"weighing" (cognition-verb bucket) in the same line), and a first batch of concrete visual components:
 `ConveyListItem`, `ConveyCard`, `ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`,
 `ConveySegmentedControl`, `ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
 `tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`.
@@ -151,8 +162,13 @@ Multiplatform version compiles against), so `conveyTypeFontFamily(variation)` ba
 for the font's license (`docs/Azrienoch-OFL.txt` travels with it) and `ConveyType.kt`'s own doc
 comment for the honest per-platform caveat on the two custom axes (`SERF`/`GRAD`): this module
 compiles clean on `androidTarget`/`desktop`/`wasmJs` (and `iosArm64`/`iosSimulatorArm64` compile
-too, though no macOS host here to run them), but no target's actual rendered output has been
-visually verified in this environment — `wght`/`wdth` are safe everywhere regardless.
+too, though no macOS host here to run them). Desktop's actual rendered output (including this
+specimen) has been visually verified in this environment — `:dev-app:run` under Xvfb, screenshotted
+via `java.awt.Robot` — with software Skiko rendering, since no real GL context is available here
+(`Cannot create Linux GL context`, Skiko falls back automatically); Android and wasmJs's actual
+on-screen rendering has not (no emulator/device, no display for a real browser here respectively,
+though wasmJs's own component tests now run for real against headless Chromium — see "Building"
+above) — `wght`/`wdth` are safe everywhere regardless.
 
 ## Dev loop
 
@@ -172,7 +188,13 @@ them are published, and none change what `:convey:build` produces:
   failure, only a logged warning — see that file's comment if this needs touching again.
 - `android-dev-app` — the same idea for an actual Android device: a real, installable
   `com.android.application` module (`convey` itself can't be `adb install`ed, it's a library) with
-  a `MainActivity` hosting the same gallery.
+  a `MainActivity` hosting the same gallery. Needs its own `alias(libs.plugins.kotlinAndroid)` in
+  `android-dev-app/build.gradle.kts` (plus a matching `jvmTarget`/`compileOptions` pin to `JVM_11`,
+  same as `convey`'s own `androidTarget`) — without it Gradle registers no `compileDebugKotlin`
+  task for this module at all and silently drops `MainActivity.kt` from the build with no error,
+  producing an APK with no launcher activity; confirmed and fixed for real, not just inferred from
+  reading the build script (`./gradlew :android-dev-app:assembleDebug` now actually compiles and
+  packages it).
 - `hotswap` — a free, from-scratch, on-device hot-swap tool for `android-dev-app`, since Compose
   Hot Reload is desktop-only and the equivalent third-party tool (HotSwan) is paid. It redefines a
   changed class on an already-running debuggable process over JDWP (the same ART primitive Android

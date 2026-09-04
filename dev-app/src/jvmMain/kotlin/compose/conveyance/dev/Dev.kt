@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +32,9 @@ import compose.conveyance.ConveyKineticText
 import compose.conveyance.ConveyLife
 import compose.conveyance.ConveySvoScene
 import compose.conveyance.ConveySystem
+import compose.conveyance.foundation.ConveyBody
+import compose.conveyance.foundation.ConveyBodyLine
+import compose.conveyance.foundation.ConveyBodyRole
 import compose.conveyance.foundation.ConveyTopographicalLayout
 import compose.conveyance.tokens.ConveyColor
 import compose.conveyance.tokens.ConveyTypeAxis
@@ -96,6 +101,28 @@ fun main() = application {
                 ConveyTopographicalLayout(
                     text = "The balloon rose into the sky",
                     style = TextStyle(color = ConveyColor.OnSurface, fontSize = 18.sp),
+                )
+                Text(
+                    text = "ConveyBody (Part XII) -- scroll the box below",
+                    style = TextStyle(color = ConveyColor.OnSurfaceVariant, fontSize = 14.sp),
+                )
+                ConveyBody(
+                    lines = listOf(
+                        ConveyBodyLine(
+                            "The cheetah sprints across the plain, chasing the fleeing gazelle with relentless speed.",
+                            ConveyBodyRole.Paragraph,
+                        ),
+                        ConveyBodyLine(
+                            "The scientist calmly considered the data, weighing each possibility before she decided.",
+                            ConveyBodyRole.Paragraph,
+                        ),
+                        ConveyBodyLine(
+                            "Speed and grace are not opposites; they are the same motion, seen from two directions.",
+                            ConveyBodyRole.Quote,
+                        ),
+                    ),
+                    modifier = Modifier.fillMaxWidth().height(220.dp),
+                    color = ConveyColor.OnSurface,
                 )
             }
         }

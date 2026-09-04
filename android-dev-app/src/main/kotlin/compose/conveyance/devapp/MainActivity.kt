@@ -11,6 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -30,6 +32,9 @@ import androidx.core.content.ContextCompat
 import compose.conveyance.ConveyKineticSentence
 import compose.conveyance.ConveySvoScene
 import compose.conveyance.ConveySystem
+import compose.conveyance.foundation.ConveyBody
+import compose.conveyance.foundation.ConveyBodyLine
+import compose.conveyance.foundation.ConveyBodyRole
 import compose.conveyance.foundation.ConveyTopographicalLayout
 import compose.conveyance.tokens.ConveyColor
 import compose.conveyance.tokens.ConveyTypePreset
@@ -99,6 +104,20 @@ class MainActivity : ComponentActivity() {
                         ConveyTopographicalLayout(
                             text = "The leaves fell to the ground",
                             style = TextStyle(color = ConveyColor.OnSurface, fontSize = 18.sp),
+                        )
+                        ConveyBody(
+                            lines = listOf(
+                                ConveyBodyLine(
+                                    "The cheetah sprints across the plain, chasing the fleeing gazelle with relentless speed.",
+                                    ConveyBodyRole.Paragraph,
+                                ),
+                                ConveyBodyLine(
+                                    "Speed and grace are not opposites; they are the same motion, seen from two directions.",
+                                    ConveyBodyRole.Quote,
+                                ),
+                            ),
+                            modifier = Modifier.fillMaxWidth().height(220.dp),
+                            color = ConveyColor.OnSurface,
                         )
                     }
                 }
