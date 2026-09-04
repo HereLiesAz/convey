@@ -150,7 +150,14 @@ output, e.g. "sprints"/"chasing" (heavy-verb bucket) rendering bolder than "cons
 "weighing" (cognition-verb bucket) in the same line), and a first batch of concrete visual components:
 `ConveyListItem`, `ConveyCard`, `ConveyAvatar`, `ConveyBadge`, `ConveyChip`, `ConveySwitch`,
 `ConveySegmentedControl`, `ConveyTopBar`, and `ConveyNavigationBar` (see LIBRARY.md for each).
-`tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`.
+`tokens/` holds `ConveyMotion`/`ConveyShape`/`ConveyColor`/`ConveySize`/`ConveyType`. `ConveyColor`'s
+reference palette is the real Material Design 3 baseline dark color scheme (seed `#6750A4`), not
+an invented hue set — deliberate parity with the wider Conveyance ecosystem's own
+[`conveyance-expressive`](https://github.com/HereLiesAz/conveyance-expressive) composable-set
+library's `ExpressiveRole` container colors, one of that ecosystem's five real, physically/
+spec-grounded style systems (`-h2g2`, `-expressive`, `-liquid`, `-bacterium`, `-space`).
+`SurfaceContainer*` are computed by alpha-blending `Primary` over `Surface` at M3's own
+per-elevation overlay opacities rather than hand-picked hex literals.
 `ConveyType` is this library's official typeface — [Azrienoch](https://github.com/HereLiesAz/Azrienoch),
 a multiplex variable font (SIL OFL 1.1) exposing `wght`/`wdth`/`SERF`/`GRAD` as one family
 instead of a family per weight or style; the compiled font ships as a Compose resource
