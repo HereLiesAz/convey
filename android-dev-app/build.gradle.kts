@@ -6,6 +6,7 @@
 // Android APK... do not apply to shared KMP library modules").
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
 }
@@ -33,6 +34,22 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+// Matches convey/build.gradle.kts's own androidTarget { compilerOptions { jvmTarget = JVM_11 } }
+// -- keeping both android modules on the same JVM target avoids the "Inconsistent JVM Target
+// Compatibility" failure between this module's compileDebugJavaWithJavac (11, from
+// compileOptions above) and its compileDebugKotlin (which otherwise defaults to the toolchain's
+// own JDK version, 21 here).
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
 
