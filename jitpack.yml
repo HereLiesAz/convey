@@ -1,0 +1,25 @@
+jdk:
+  - openjdk17
+
+# JitPack's default build (no jitpack.yml) attempts to publish every
+# target in this multi-target KMP module, including androidTarget --
+# which fails outright without an Android SDK on JitPack's own runner,
+# the same way it does in any environment without one configured. That
+# failure doesn't just fail the Android artifact: it aborts the whole
+# publish task graph before later tasks -- including the wasmJs target's
+# Compose Multiplatform resources artifact (the `-kotlin_resources.zip`
+# classifier a consumer's runtime font/image loading actually needs, not
+# just the compiled .klib) -- ever run, so a consumer resolving this
+# module from JitPack gets working Kotlin code and a missing resource at
+# runtime, with no compile-time signal that anything is wrong.
+#
+# Publishing only the wasmJs target's own Maven publication sidesteps
+# the Android SDK requirement entirely and reliably produces every
+# artifact (.klib, .pom, .module, sources jar, and the resources zip)
+# a wasmJs consumer needs. Verified locally: `./gradlew
+# :convey:publishWasmJsPublicationToMavenLocal` produces
+# `convey-wasm-js-<version>-kotlin_resources.kotlin_resources.zip`
+# alongside the .klib; the default multi-target `publishToMavenLocal`
+# does not, for exactly the reason above.
+install:
+  - ./gradlew :convey:publishWasmJsPublicationToMavenLocal --no-daemon --stacktrace
