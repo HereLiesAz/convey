@@ -5,133 +5,78 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
 /**
- * Shape vocabulary for the Conveyance system.
+ * Shape vocabulary for the Conveyance system: named tokens for a fixed set of corner
+ * treatments, so a product's own shape choices are expressed as tokens rather than restated
+ * numeric radii at every call site.
  *
- * Shape is not decoration. Shape is a signal.
- *
- * The Manifesto says: "Use varied corner radii and forms to direct focus without literal arrows."
- * This is the implementation of that principle as tokens.
- *
- * Hierarchy of shape signals (most to least interactive-seeming):
- *   Circle (50%) > Squircle (35%) > ExtraLarge (28dp) > Large (16dp) > Medium (12dp)
- *   > Small (8dp) > None (0dp) > Cut (mechanical)
- *
- * A circle invites touch more than a rounded rectangle.
- * A rounded rectangle invites touch more than a sharp rectangle.
- * A cut corner signals precision and structure over warmth.
- *
- * Use these as semantic tokens, not as numeric radius preferences.
- * "I want 14dp radius" is not a design decision. "This element should feel approachable
- * but not primary" — that's a design decision. The answer might be Medium.
- *
- * Every token carries a rationale. Know the rationale before choosing the token.
+ * The prescription for which shape fits which kind of element lives in the `convey`
+ * composable library itself, in each concrete component's own default -- not as free-floating
+ * documentation here, disconnected from what actually ships.
+ * [compose.conveyance.foundation.ConveyFab] defaults its collapsed/expanded shapes to
+ * [Circle]/[ExtraLarge]; [compose.conveyance.foundation.ConveyCard] defaults to [Medium];
+ * [compose.conveyance.foundation.ConveyChip], [compose.conveyance.foundation.ConveyAvatar],
+ * [compose.conveyance.foundation.ConveyBadge],
+ * [compose.conveyance.foundation.ConveySegmentedControl],
+ * [compose.conveyance.foundation.ConveyNavigationBar] and
+ * [compose.conveyance.foundation.ConveySwitch] all clip their own circular affordances (a
+ * chip's remove target, an avatar, a status dot, a switch thumb, ...) to [Circle] directly in
+ * their own implementation. Use those composables, not a hand-picked token off this object,
+ * for anything they already cover -- this vocabulary exists for the composables to draw from,
+ * and for the cases they don't cover yet.
  */
 object ConveyShape {
 
-    /**
-     * 50% radius.
-     * Maximum interactivity signal. "Touch me."
-     * Use for: FABs, icon buttons, avatar indicators, the single most touchable element.
-     * Do not use for anything that is not strongly interactive.
-     */
+    /** 50% radius -- a full circle/pill on a square bounding box. [compose.conveyance.foundation.ConveyFab]'s collapsed shape and every circular affordance in `convey`'s own composables default to this. */
     val Circle: Shape = RoundedCornerShape(percent = 50)
 
-    /**
-     * ~35% radius. Superellipse approximation.
-     * Friendly and approachable without commanding primary attention.
-     * Use for: chips, tags, status badges, pill-shaped secondary actions.
-     */
+    /** ~35% radius -- a superellipse approximation. */
     val Squircle: Shape = RoundedCornerShape(percent = 35)
 
-    /**
-     * 28dp radius.
-     * Prominent cards and large interactive surfaces.
-     * Use for: bottom sheets, dialogs, hero cards, feature tiles.
-     */
+    /** 28dp radius. [compose.conveyance.foundation.ConveyFab]'s expanded shape. */
     val ExtraLarge: Shape = RoundedCornerShape(28.dp)
 
-    /**
-     * 16dp radius.
-     * Standard cards and most containers.
-     * Use for: list cards, input containers, navigation items.
-     */
+    /** 16dp radius. */
     val Large: Shape = RoundedCornerShape(16.dp)
 
-    /**
-     * 12dp radius.
-     * Medium interactive elements.
-     * Use for: chips, filters, segmented buttons, small cards.
-     */
+    /** 12dp radius. [compose.conveyance.foundation.ConveyCard]'s default shape. */
     val Medium: Shape = RoundedCornerShape(12.dp)
 
-    /**
-     * 8dp radius.
-     * Small elements and compact surfaces.
-     * Use for: badges, small chips, snackbars.
-     */
+    /** 8dp radius. */
     val Small: Shape = RoundedCornerShape(8.dp)
 
-    /**
-     * 4dp radius.
-     * Near-sharp elements that still feel slightly finished.
-     * Use for: dense data tables, compact list items, code blocks.
-     */
+    /** 4dp radius. */
     val XSmall: Shape = RoundedCornerShape(4.dp)
 
-    /**
-     * 0dp radius.
-     * Full-bleed and structural.
-     * Use for: edge-to-edge surfaces, structural dividers, backgrounds.
-     * Not for interactive elements — sharp corners signal "this is not for touching."
-     */
+    /** 0dp radius -- a plain rectangle. */
     val None: Shape = RoundedCornerShape(0.dp)
 
-    /**
-     * Cut corners (45° chamfer).
-     * Mechanical, precise, systematic. Not warm.
-     * Use for: settings panels, developer tools, system UI, anything that signals
-     * "this is infrastructure, not content." If your product is warm and human,
-     * you probably do not need this.
-     */
+    /** Cut corners, 45-degree chamfer, 12dp. */
     val Cut: Shape = CutCornerShape(12.dp)
 
-    /**
-     * Cut corners, small chamfer.
-     * Subtle mechanical signal.
-     */
+    /** Cut corners, 45-degree chamfer, 6dp -- a smaller chamfer than [Cut]. */
     val CutSmall: Shape = CutCornerShape(6.dp)
 
-    /**
-     * Top-rounded only. For elements attached to a bottom edge.
-     * Use for: bottom sheets before they fully expand, sticky bottom panels.
-     */
+    /** Rounded on the top two corners only, 16dp. */
     val TopLarge: Shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+
+    /** Rounded on the top two corners only, 28dp. */
     val TopExtraLarge: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
 
-    /**
-     * Bottom-rounded only. For elements attached to a top edge.
-     */
+    /** Rounded on the bottom two corners only, 16dp. */
     val BottomLarge: Shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
 
     // ── Shape scale for programmatic use ─────────────────────────────────────
 
-    /**
-     * All shapes in ascending radius order.
-     * Use for interpolating between shape tokens programmatically.
-     */
+    /** [None] through [Circle], in ascending radius order -- for interpolating between shape tokens programmatically. */
     val scale: List<Shape> = listOf(None, XSmall, Small, Medium, Large, ExtraLarge, Squircle, Circle)
 
-    /**
-     * The shape that sits one level above [shape] in the hierarchy.
-     * Returns [Circle] if [shape] is already [Circle] or not in the scale.
-     * Used for expanding elements — a card expanding to full-screen should
-     * progress from Large toward ExtraLarge, not toward Circle.
-     */
+    /** The next shape up from [shape] in [scale]. Returns [Circle] if [shape] is already [Circle] or isn't in [scale]. */
     fun escalate(shape: Shape): Shape {
         val idx = scale.indexOf(shape)
         return if (idx < 0 || idx >= scale.lastIndex) scale.last() else scale[idx + 1]
     }
 
+    /** The next shape down from [shape] in [scale]. Returns [None] if [shape] is already [None] or isn't in [scale]. */
     fun deescalate(shape: Shape): Shape {
         val idx = scale.indexOf(shape)
         return if (idx <= 0) scale.first() else scale[idx - 1]
