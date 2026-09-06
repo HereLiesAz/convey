@@ -21,5 +21,26 @@ jdk:
 # `convey-wasm-js-<version>-kotlin_resources.kotlin_resources.zip`
 # alongside the .klib; the default multi-target `publishToMavenLocal`
 # does not, for exactly the reason above.
+#
+# `publishWasmJsPublicationToMavenLocal` alone was still an incomplete
+# fix: it only writes the `convey-wasm-js` artifact, never the *root*
+# `convey` Maven module (Kotlin Multiplatform's `kotlinMultiplatform`
+# publication) -- the one a consumer's plain `com.github.<owner>.convey:
+# convey:<version>` coordinate (no `-wasm-js` suffix) actually resolves
+# against, with Gradle Module Metadata's `available-at` pointing at
+# `convey-wasm-js` as the real per-target variant. Without it, every
+# commit built under this jitpack.yml 404s on that root .pom -- verified
+# directly: `com/github/<owner>/convey/convey/<version>/convey-<version>.pom`
+# never existed for any commit built this way, only for commits built
+# before this file existed (whose default multi-target build happened to
+# run the `kotlinMultiplatform` publish task too, before the doomed
+# Android task ran). Publishing both, as below, produces the root
+# `convey` module (with its `available-at` pointer) *and*
+# `convey-wasm-js` (with the resources zip) side by side -- verified
+# locally: both `compose/conveyance/convey/<version>/convey-<version>.pom`
+# and `compose/conveyance/convey-wasm-js/<version>/...` exist afterward,
+# and the root module's `.module` file's `wasmJsApiElements-published`/
+# `wasmJsResourcesElements-published` variants both point at
+# `convey-wasm-js`, matching what a `wasmJs`-target consumer resolves.
 install:
-  - ./gradlew :convey:publishWasmJsPublicationToMavenLocal --no-daemon --stacktrace
+  - ./gradlew :convey:publishKotlinMultiplatformPublicationToMavenLocal :convey:publishWasmJsPublicationToMavenLocal --no-daemon --stacktrace
