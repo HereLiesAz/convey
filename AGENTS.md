@@ -175,6 +175,38 @@ its klibs carry the same version coupling and there's no macOS host here to veri
 Wired into both dev galleries (`dev-app`/`android-dev-app`) as a real, visible clip-shape demo —
 not just inert tokens — and actually visually verified: see "Dev loop" below for the same
 Xvfb/`java.awt.Robot` screenshot method used for `ConveyBody`.
+`ConveyExpressiveType` (`tokens/ConveyExpressiveType.kt`) is the real M3 15-step type scale
+(five roles — Display/Headline/Title/Body/Label — times three sizes), ported from
+`conveyance-expressive`'s own `Type.kt`/`ExpressiveType`, including its `step(name)` lookup and
+h2g2-style aliases (`hero`, `section`, `lead`, `body`, `eyebrow`, `micro`). Lives in `commonMain`
+(no `ConveyExpressiveShape` dependency), so it compiles and works on every target including
+wasmJs. `foundation/ConveyExpressiveBadge.kt` and `foundation/ConveyExpressiveOffer.kt` (in the
+same `expressiveShapeMain` source set as `ConveyExpressiveShape`, for the same reason) port the
+rest of `conveyance-expressive`'s `Templates.kt` composable gamut — `ShapeBadge`, `CompoundBadge`,
+`TitleTile`, `MorphControl` — as `ConveyExpressiveBadge`, `ConveyExpressiveCompoundBadge`,
+`ConveyExpressiveTile`, and `ConveyExpressiveOffer`, re-parametrized onto this library's own
+`ConveyWeight`/`ConveyColor` vocabulary and, for the last one, `ConveyOffer`/`ConveyOfferPhase`
+rather than porting `conveyance-expressive`'s own generic `ComposableRequest`/`Templates.registry`
+manifest-indirection layer, which is specific to that library's `.azp` system. `ConveyExpressiveOffer`
+is a thin wrapper around `ConveyOffer` that swaps `targetShape` to a different
+`ConveyExpressiveShape` polygon per `ConveyOfferPhase` (rest/busy/resolved) — the actual morph
+animation between those shapes is `ConveyOffer`'s own `ConveyStateHost`, exactly the same
+point-sampled path-interpolation mechanism every other `ConveyStateHost`-based composable in this
+library already uses, not a second morph engine. An earlier version of this composable instead
+drove a continuous `androidx.graphics.shapes.Morph` itself, computing a new shape every frame for
+a self-pulsing "still working" effect during `Progress` — this fought `ConveyStateHost`'s own
+morph layer (which re-interpolates from whatever the previous frame's shape was on every single
+value change) and never visually settled; removed in favor of the simpler discrete-shape-per-phase
+design once a real screenshot showed the wrong result, not assumed correct from the code alone.
+That same screenshot-driven check also caught a real, pre-existing bug in both `ConveyStateHost`
+(`foundation/ConveyStateHost.kt`) and `ConveyMorph` (`ConveyMorph.kt`): their inner `Box` applied
+`.drawBehind { drawRect(color) }.clip(shape)` — `drawBehind` outside `clip` in the modifier chain,
+so the background fill was painted as an unclipped rectangle and the clip shape had no visible
+effect on it at all. Every consumer of either composable was affected, not just the new one; fixed
+by swapping the order to `.clip(shape).drawBehind { drawRect(color) }` (the same order
+`Modifier.clip(shape).background(color)` always needs), confirmed against a live screenshot showing
+an actual circle/cookie9Sided/heart shape morph rather than a plain rectangle. All five new
+composables are wired into both dev galleries and visually verified the same way.
 `ConveyType` is this library's official typeface — [Azrienoch](https://github.com/HereLiesAz/Azrienoch),
 a multiplex variable font (SIL OFL 1.1) exposing `wght`/`wdth`/`SERF`/`GRAD` as one family
 instead of a family per weight or style; the compiled font ships as a Compose resource

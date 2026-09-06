@@ -22,7 +22,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +39,15 @@ import compose.conveyance.ConveyKineticText
 import compose.conveyance.ConveyLife
 import compose.conveyance.ConveySvoScene
 import compose.conveyance.ConveySystem
+import compose.conveyance.ConveyWeight
 import compose.conveyance.foundation.ConveyBody
 import compose.conveyance.foundation.ConveyBodyLine
 import compose.conveyance.foundation.ConveyBodyRole
+import compose.conveyance.foundation.ConveyExpressiveBadge
+import compose.conveyance.foundation.ConveyExpressiveCompoundBadge
+import compose.conveyance.foundation.ConveyExpressiveOffer
+import compose.conveyance.foundation.ConveyExpressiveTile
+import compose.conveyance.foundation.ConveyOfferPhase
 import compose.conveyance.foundation.ConveyTopographicalLayout
 import compose.conveyance.tokens.ConveyColor
 import compose.conveyance.tokens.ConveyExpressiveShape
@@ -143,6 +152,45 @@ fun main() = application {
                                 .background(if (count % 2 == 0) ConveyColor.PrimaryContainer else ConveyColor.TertiaryContainer)
                                 .clickable { count++ },
                         )
+                    }
+                }
+                Text(
+                    text = "The expressive composable gamut -- badge, compound badge, tile, morphing offer",
+                    style = TextStyle(color = ConveyColor.OnSurfaceVariant, fontSize = 14.sp),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                    ConveyExpressiveBadge(label = "9", shapeName = "cookie9Sided", weight = ConveyWeight.Primary)
+                    ConveyExpressiveCompoundBadge(label = "!", shapeName = "sunny", weight = ConveyWeight.Hero)
+                    ConveyExpressiveTile(label = "Shipment", shapeName = "clamShell", subtitle = "Out for delivery", weight = ConveyWeight.Secondary)
+                    val scope = rememberCoroutineScope()
+                    var offerPhase by remember { mutableStateOf(ConveyOfferPhase.Invite) }
+                    ConveyExpressiveOffer(
+                        purpose = "Demonstrate a morphing offer",
+                        phase = offerPhase,
+                        onInvoke = {
+                            scope.launch {
+                                offerPhase = ConveyOfferPhase.Progress
+                                delay(1200)
+                                offerPhase = ConveyOfferPhase.Success
+                                delay(1200)
+                                offerPhase = ConveyOfferPhase.Invite
+                            }
+                        },
+                        weight = ConveyWeight.Primary,
+                        modifier = Modifier.size(64.dp),
+                    ) { phase ->
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = when (phase) {
+                                    ConveyOfferPhase.Invite -> "Go"
+                                    ConveyOfferPhase.Progress -> "..."
+                                    ConveyOfferPhase.Success -> "✓"
+                                    ConveyOfferPhase.Failure -> "!"
+                                    ConveyOfferPhase.Interrupted -> "x"
+                                },
+                                color = ConveyColor.OnPrimaryContainer,
+                            )
+                        }
                     }
                 }
             }

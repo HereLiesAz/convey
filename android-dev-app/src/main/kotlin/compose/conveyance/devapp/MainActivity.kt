@@ -20,11 +20,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,14 +40,22 @@ import androidx.core.content.ContextCompat
 import compose.conveyance.ConveyKineticSentence
 import compose.conveyance.ConveySvoScene
 import compose.conveyance.ConveySystem
+import compose.conveyance.ConveyWeight
 import compose.conveyance.foundation.ConveyBody
 import compose.conveyance.foundation.ConveyBodyLine
 import compose.conveyance.foundation.ConveyBodyRole
+import compose.conveyance.foundation.ConveyExpressiveBadge
+import compose.conveyance.foundation.ConveyExpressiveCompoundBadge
+import compose.conveyance.foundation.ConveyExpressiveOffer
+import compose.conveyance.foundation.ConveyExpressiveTile
+import compose.conveyance.foundation.ConveyOfferPhase
 import compose.conveyance.foundation.ConveyTopographicalLayout
 import compose.conveyance.tokens.ConveyColor
 import compose.conveyance.tokens.ConveyExpressiveShape
 import compose.conveyance.tokens.ConveyTypePreset
 import compose.conveyance.tokens.conveyTypeFontFamily
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * `./gradlew :android-dev-app:installDebug`, then the `:hotswap` tool (see its README) redefines
@@ -132,6 +144,45 @@ class MainActivity : ComponentActivity() {
                                         .clip(ConveyExpressiveShape.shapeOf(name))
                                         .background(ConveyColor.PrimaryContainer),
                                 )
+                            }
+                        }
+                        Text(
+                            text = "The expressive composable gamut -- badge, compound badge, tile, morphing offer",
+                            style = TextStyle(color = ConveyColor.OnSurfaceVariant, fontSize = 14.sp),
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                            ConveyExpressiveBadge(label = "9", shapeName = "cookie9Sided", weight = ConveyWeight.Primary)
+                            ConveyExpressiveCompoundBadge(label = "!", shapeName = "sunny", weight = ConveyWeight.Hero)
+                            ConveyExpressiveTile(label = "Shipment", shapeName = "clamShell", subtitle = "Out for delivery", weight = ConveyWeight.Secondary)
+                            val offerScope = rememberCoroutineScope()
+                            var offerPhase by remember { mutableStateOf(ConveyOfferPhase.Invite) }
+                            ConveyExpressiveOffer(
+                                purpose = "Demonstrate a morphing offer",
+                                phase = offerPhase,
+                                onInvoke = {
+                                    offerScope.launch {
+                                        offerPhase = ConveyOfferPhase.Progress
+                                        delay(1200)
+                                        offerPhase = ConveyOfferPhase.Success
+                                        delay(1200)
+                                        offerPhase = ConveyOfferPhase.Invite
+                                    }
+                                },
+                                weight = ConveyWeight.Primary,
+                                modifier = Modifier.size(64.dp),
+                            ) { phase ->
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = when (phase) {
+                                            ConveyOfferPhase.Invite -> "Go"
+                                            ConveyOfferPhase.Progress -> "..."
+                                            ConveyOfferPhase.Success -> "✓"
+                                            ConveyOfferPhase.Failure -> "!"
+                                            ConveyOfferPhase.Interrupted -> "x"
+                                        },
+                                        color = ConveyColor.OnPrimaryContainer,
+                                    )
+                                }
                             }
                         }
                     }

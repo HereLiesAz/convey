@@ -477,7 +477,7 @@ object ConveyExpressiveShape {
 }
 
 /** Builds [path] from a Bezier-cubic outline (as returned by [RoundedPolygon.cubics]), rewound and closed. */
-private fun pathFromCubics(path: Path, cubics: List<Cubic>): Path {
+internal fun pathFromCubics(path: Path, cubics: List<Cubic>): Path {
     path.rewind()
     cubics.forEachIndexed { index, cubic ->
         if (index == 0) path.moveTo(cubic.anchor0X, cubic.anchor0Y)
@@ -492,7 +492,7 @@ private fun pathFromCubics(path: Path, cubics: List<Cubic>): Path {
 }
 
 /** A static (non-morphing) [Shape] for one [RoundedPolygon], scaled to fill its assigned box. */
-private class ConveyPolygonShape(polygon: RoundedPolygon) : Shape {
+internal class ConveyPolygonShape(polygon: RoundedPolygon) : Shape {
     private val shapePath: Path = pathFromCubics(Path(), polygon.cubics)
 
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
