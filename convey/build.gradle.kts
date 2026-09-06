@@ -30,7 +30,10 @@ abstract class DokkaMarkdownPlugin : DokkaFormatPlugin(formatName = "markdown") 
 apply<DokkaMarkdownPlugin>()
 
 group = "compose.conveyance"
-version = "1.0.0"
+// Overridable via -PconveyVersion=<value> so CI can publish under the commit's own short SHA
+// (see .github/workflows/publish-packages.yml) without editing this file per release --
+// "1.0.0" only ever applies to a local, uninstalled build.
+version = (findProperty("conveyVersion") as String?) ?: "1.0.0"
 
 kotlin {
     androidTarget {
@@ -159,6 +162,25 @@ publishing {
                     name.set("Apache License 2.0")
                     url.set("https://www.apache.org/licenses/LICENSE-2.0")
                 }
+            }
+        }
+    }
+
+    // GitHub Packages, not JitPack: JitPack's coordinate-relocation step rewrites Gradle
+    // Module Metadata's `files[].url` for a classified artifact (this module's wasmJs
+    // Compose-resources zip, published as `<artifact>-<version>-kotlin_resources.kotlin_resources.zip`)
+    // down to a generic `<artifact>-<version>.zip` that doesn't actually exist -- Gradle trusts
+    // that metadata and never even requests the real file, so a JitPack-resolved consumer's
+    // Compose resources (this library's own bundled Azrienoch font, for instance) never get
+    // bundled, silently, with no build-time signal that anything is missing. GitHub Packages
+    // publishes exactly what this build produces, verbatim, with no relocation step to mangle.
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/HereLiesAz/convey")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
