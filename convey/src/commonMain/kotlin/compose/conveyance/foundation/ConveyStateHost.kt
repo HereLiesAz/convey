@@ -119,8 +119,8 @@ fun <S : Any> ConveyStateHost(
 
     Box(
         modifier = sizeModifier
-            .drawBehind { drawRect(animatedColor) }
-            .clip(morphShape),
+            .clip(morphShape)
+            .drawBehind { drawRect(animatedColor) },
         contentAlignment = androidx.compose.ui.Alignment.Center,
     ) {
         CompositionLocalProvider(LocalContentColor provides animatedContentColor) {

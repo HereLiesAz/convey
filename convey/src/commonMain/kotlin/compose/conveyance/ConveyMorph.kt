@@ -78,8 +78,8 @@ fun ConveyMorph(
 
     Box(
         modifier = modifier
-            .drawBehind { drawRect(animatedColor) }
-            .clip(morphShape),
+            .clip(morphShape)
+            .drawBehind { drawRect(animatedColor) },
         content = {
             CompositionLocalProvider(LocalContentColor provides animatedContentColor) {
                 content()
