@@ -1,5 +1,3 @@
-import org.jetbrains.dokka.gradle.formats.DokkaFormatPlugin
-import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -8,31 +6,10 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.dokka)
     `maven-publish`
 }
 
-// GitHub wikis render Markdown (via Gollum), not a static HTML site with its own CSS/JS assets --
-// Dokka's default output. This registers GitHub-Flavored-Markdown as an additional Dokka output
-// format (`dokkaGenerateMarkdown`) so the API reference can be pushed straight into the wiki repo
-// (see .github/workflows/publish-docs.yml). HTML output (`dokkaGenerateHtml`) is untouched.
-@OptIn(InternalDokkaGradlePluginApi::class)
-abstract class DokkaMarkdownPlugin : DokkaFormatPlugin(formatName = "markdown") {
-    override fun DokkaFormatPluginContext.configure() {
-        project.dependencies {
-            dokkaPlugin(dokka("gfm-plugin"))
-            formatDependencies.dokkaPublicationPluginClasspathApiOnly.dependencies.addLater(
-                dokka("gfm-template-processing-plugin")
-            )
-        }
-    }
-}
-apply<DokkaMarkdownPlugin>()
-
 group = "compose.conveyance"
-// Overridable via -PconveyVersion=<value> so CI can publish under the commit's own short SHA
-// (see .github/workflows/publish-packages.yml) without editing this file per release --
-// "1.0.0" only ever applies to a local, uninstalled build.
 version = (findProperty("conveyVersion") as String?) ?: "1.0.0"
 
 kotlin {
@@ -44,11 +21,6 @@ kotlin {
         publishLibraryVariants("release")
     }
 
-    // iosX64 (the Intel simulator target) dropped out with this Compose Multiplatform bump --
-    // 1.12.0 doesn't publish org.jetbrains.compose.*:*-iosx64 artifacts at all (confirmed: 404 on
-    // Maven Central where iosarm64/iossimulatorarm64 both 200), consistent with the wider industry
-    // having moved off Intel Macs. iosArm64 (real device) + iosSimulatorArm64 (Apple Silicon
-    // simulator) is the modern KMP pair.
     iosArm64()
     iosSimulatorArm64()
 
@@ -78,18 +50,6 @@ kotlin {
             }
         }
 
-        // `androidx.graphics:graphics-shapes` (ConveyExpressiveShape.kt's dependency, the real
-        // M3 Expressive polygon geometry) publishes a wasmJs klib compiled by Kotlin 2.2.0
-        // (confirmed via its klib manifest's `compiler_version`), which fails to link against
-        // this project's pinned Kotlin 2.1.20 compiler with a blanket "Unresolved reference"
-        // across the whole androidx.graphics.shapes package -- verified for real, not assumed:
-        // `:convey:compileKotlinWasmJs` fails this way with the dependency in commonMain, while
-        // `:convey:compileKotlinDesktop`/`compileDebugKotlinAndroid` compile clean against the
-        // same dependency (JVM classfiles don't have this klib-ABI version coupling). So this
-        // source set carries `graphics-shapes` and ConveyExpressiveShape.kt for android+desktop
-        // only, until this project's Kotlin pin can move to 2.2.0+ -- see AGENTS.md's own note
-        // on the wasmJs gap. iOS is left out too: its klibs are equally version-coupled and this
-        // sandbox has no macOS host to actually verify either way, so it's not claimed here.
         val expressiveShapeMain by creating {
             dependsOn(commonMain)
             dependencies {
@@ -133,11 +93,6 @@ android {
         }
     }
 
-    // KMP's `publishLibraryVariants("release")` (below, in the `kotlin {}` block) requires the
-    // Android library plugin to actually expose a "release" library component -- without this,
-    // com.android.library does not publish one on its own, and the build fails at configuration
-    // time with "tried to set up publishing for Android build variants that are not library
-    // variants or do not exist: release".
     publishing {
         singleVariant("release")
     }
@@ -166,14 +121,6 @@ publishing {
         }
     }
 
-    // GitHub Packages, not JitPack: JitPack's coordinate-relocation step rewrites Gradle
-    // Module Metadata's `files[].url` for a classified artifact (this module's wasmJs
-    // Compose-resources zip, published as `<artifact>-<version>-kotlin_resources.kotlin_resources.zip`)
-    // down to a generic `<artifact>-<version>.zip` that doesn't actually exist -- Gradle trusts
-    // that metadata and never even requests the real file, so a JitPack-resolved consumer's
-    // Compose resources (this library's own bundled Azrienoch font, for instance) never get
-    // bundled, silently, with no build-time signal that anything is missing. GitHub Packages
-    // publishes exactly what this build produces, verbatim, with no relocation step to mangle.
     repositories {
         maven {
             name = "GitHubPackages"
