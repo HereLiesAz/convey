@@ -1,0 +1,32 @@
+name: Publish Android KMP variant
+
+on:
+  push:
+    branches:
+      - feat/publish-android-variant
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Publish KMP root, wasmJs, and Android release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew \
+            :convey:publishKotlinMultiplatformPublicationToGitHubPackagesRepository \
+            :convey:publishWasmJsPublicationToGitHubPackagesRepository \
+            :convey:publishAndroidReleasePublicationToGitHubPackagesRepository \
+            -PconveyVersion=$(git rev-parse --short HEAD) \
+            --no-daemon --stacktrace
