@@ -23,8 +23,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          chmod +x gradlew
-          ./gradlew \
+          curl --fail --location --silent --show-error \
+            https://services.gradle.org/distributions/gradle-8.14.3-bin.zip \
+            --output /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          /tmp/gradle-8.14.3/bin/gradle \
             :convey:publishKotlinMultiplatformPublicationToGitHubPackagesRepository \
             :convey:publishWasmJsPublicationToGitHubPackagesRepository \
             :convey:publishAndroidReleasePublicationToGitHubPackagesRepository \
