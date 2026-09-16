@@ -24,10 +24,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl --fail --location --silent --show-error \
-            https://services.gradle.org/distributions/gradle-8.14.3-bin.zip \
+            https://services.gradle.org/distributions/gradle-9.5.1-bin.zip \
             --output /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d /tmp
-          /tmp/gradle-8.14.3/bin/gradle \
+          /tmp/gradle-9.5.1/bin/gradle \
             :convey:publishKotlinMultiplatformPublicationToGitHubPackagesRepository \
             :convey:publishWasmJsPublicationToGitHubPackagesRepository \
             :convey:publishAndroidReleasePublicationToGitHubPackagesRepository \
