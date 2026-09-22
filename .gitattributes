@@ -123,6 +123,11 @@
 # Build Artifacts & Packages
 # ---------------------------------------------------------------------------
 *.jar                filter=lfs diff=lfs merge=lfs -text
+# Gradle's own wrapper jar is bootstrap machinery `./gradlew` needs present as a real blob on
+# every clone that never runs `git lfs pull` (JitPack's build clone, a plain `actions/checkout`
+# without `lfs: true`) -- as an LFS pointer it was a 130-byte text stub that broke every such
+# build with "Invalid or corrupt jarfile". Override the blanket *.jar rule above for this one path.
+gradle/wrapper/gradle-wrapper.jar -filter -diff -merge -text
 *.war                filter=lfs diff=lfs merge=lfs -text
 *.ear                filter=lfs diff=lfs merge=lfs -text
 *.apk                filter=lfs diff=lfs merge=lfs -text

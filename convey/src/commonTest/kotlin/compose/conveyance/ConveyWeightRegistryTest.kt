@@ -10,36 +10,15 @@ import kotlin.test.assertTrue
  * Exercises [ConveyWeightRegistry] directly, including the path that actually throws.
  *
  * Unlike [ConveyEmploymentRegistryTest], these deliberately do *not* all disable enforcement:
- * the enforcement is the thing under test. The no-handler cases rely on the platform
- * [defaultViolationHandler], which on desktop/wasmJs/iOS always throws (Android's
- * `BuildConfig.DEBUG`-gated variant is not exercised by the common test suite).
+ * the enforcement is the thing under test. Cases that rely on the platform
+ * [defaultViolationHandler] unconditionally throwing are *not* here, because `commonTest` is
+ * compiled into every Android build variant including `testReleaseUnitTest` — where Android's
+ * own `BuildConfig.DEBUG`-gated handler deliberately logs instead of throwing (see
+ * `ConveyViolation.android.kt`). Those default-handler-throws cases live in
+ * `desktopTest/.../ConveyWeightRegistryDesktopTest.kt` instead, where an unconditional throw is
+ * actually guaranteed.
  */
 class ConveyWeightRegistryTest {
-
-    @Test
-    fun aSecondHeroThrowsThroughThePlatformDefaultHandler() {
-        val registry = ConveyWeightRegistry()
-
-        registry.register(id = "checkout", weight = ConveyWeight.Hero)
-
-        val failure = assertFailsWith<ConveyViolationException> {
-            registry.register(id = "banner", weight = ConveyWeight.Hero)
-        }
-        assertContains(failure.message ?: "", "2 Hero elements")
-    }
-
-    @Test
-    fun exceedingMaxPrimaryThrowsThroughThePlatformDefaultHandler() {
-        val registry = ConveyWeightRegistry(maxPrimary = 2)
-
-        registry.register(id = "a", weight = ConveyWeight.Primary)
-        registry.register(id = "b", weight = ConveyWeight.Primary)
-
-        val failure = assertFailsWith<ConveyViolationException> {
-            registry.register(id = "c", weight = ConveyWeight.Primary)
-        }
-        assertContains(failure.message ?: "", "3 Primary elements (max 2)")
-    }
 
     @Test
     fun aSuppliedHandlerReceivesTheViolationInsteadOfThrowing() {
