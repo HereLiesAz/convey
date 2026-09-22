@@ -25,7 +25,7 @@ animateFloatAsState(target, spring(stiffness = 380f, dampingRatio = 0.8f))
 animateFloatAsState(target, grammar["navigate"])
 ```
 
-`ConveyGrammar` is the motion vocabulary for your surface. Every animation must use a declared meaning. Unknown meanings throw at the call site, in debug builds, immediately. Not at render time. Not silently.
+`ConveyGrammar` is the motion vocabulary for your surface. Every animation must use a declared meaning. Unknown meanings throw at the call site, immediately — unconditionally, on every platform and in every build type (`ConveyGrammar.get` calls Kotlin's own `error(...)`; there is no debug guard and no violation-handler indirection). Not at render time. Not silently.
 
 **2. One element is one thing across all its states.**
 
@@ -53,7 +53,7 @@ The user never sees a new element appear. They see their action acknowledged by 
 **3. Hierarchy is enforced, not suggested.**
 
 ```kotlin
-// This THROWS in debug builds if another Hero exists on the same surface:
+// This reports a violation if another Hero exists on the same surface:
 Modifier.conveyWeight(ConveyWeight.Hero)
 
 // The registry tracks everything. The audit tells you what you have:
@@ -66,6 +66,8 @@ registry.snapshot()
 ```
 
 "When everything is primary, nothing is primary." `ConveyWeightRegistry` makes this structural.
+
+A violation goes to `ConveySystem(onViolation = ...)` if you supplied one; otherwise to the platform default, which is **deliberately asymmetric**: Android has a real debug/release signal (`BuildConfig.DEBUG`) and so throws `ConveyViolationException` in debug and logs in release, while JVM desktop, wasmJs and iOS have no equivalent flag and therefore always throw. If you want the logging behaviour on those targets, pass your own `onViolation`.
 
 **4. Every element must declare its purpose.**
 
@@ -134,6 +136,9 @@ compose.conveyance
 ├── ConveyGrammar          — Motion vocabulary. The central contract.
 ├── ConveyMorph            — Persistent identity morphing between shapes and colors.
 ├── ConveyWeight           — Visual hierarchy enforcement (Hero/Primary/Secondary/Ghost).
+│                          (`ConveyWeight.Ghost` is a decorative/inert hierarchy tier -- NOT
+│                          the manifesto's "Ghost" undo-residue concept, which this library
+│                          implements separately as ConveyReversal.)
 ├── ConveyEmployment       — Law 4 enforcement: every element declares >=4 of the 11 ConveyJobs
 │                            (Invite/Locate/Progress/Report/Identify/Group/Separate/Warn/Confirm/
 │                            Navigate/Interrupt) or is explicitly ambient, budgeted per surface.

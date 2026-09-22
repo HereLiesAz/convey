@@ -9,12 +9,17 @@ import androidx.compose.runtime.*
  * The Conveyance Manifesto says: "Motion is grammar. One meaning per animation signature,
  * used consistently." This class makes that contract structural — not a guideline but a type.
  *
- * You do not pass AnimationSpec to Convey composables. You pass a [ConveyMeaning]. The grammar
- * maps meanings to specs and, in debug mode, enforces that:
+ * You do not pass AnimationSpec to Convey composables. You pass a meaning. The grammar
+ * maps meanings to specs and enforces that:
  *
  *   - No two meanings share the same spring parameters (two meanings = two specs)
  *   - No meaning is animated differently in different call sites
  *   - Unknown meanings fail loudly at the point of use, not at the point of render
+ *
+ * That last one is not build-type-dependent and not routed through
+ * [LocalConveyViolationHandler]: [get] and [entry] call Kotlin's own `error(...)`, so an
+ * undeclared meaning throws on every platform and in every build, release included. An
+ * animation with no declared meaning has no defined behaviour to fall back to.
  *
  * This is not about aesthetics. It is about legibility. A user who has seen "navigate" once
  * knows what "navigate" means everywhere. That is only possible if "navigate" always moves
@@ -45,7 +50,10 @@ class ConveyGrammar private constructor(
         val description: String,
     )
 
-    /** Retrieve the animation spec for a declared meaning. Fails fast on unknown meanings. */
+    /**
+     * Retrieve the animation spec for a declared meaning. Fails fast on unknown meanings:
+     * throws unconditionally, on every platform and in every build type (not debug-only).
+     */
     operator fun get(meaning: String): AnimationSpec<Float> =
         entries[meaning]?.spec ?: error(
             "ConveyGrammar: \"$meaning\" is not in this grammar's vocabulary.\n" +
@@ -62,7 +70,7 @@ class ConveyGrammar private constructor(
 
     /**
      * Runtime audit: returns a human-readable report of the grammar.
-     * In debug builds, call this and log it. Let the team read it.
+     * Call this and log it. Let the team read it.
      * It should be short. If it isn't, the grammar is too complex.
      */
     fun audit(): String = buildString {

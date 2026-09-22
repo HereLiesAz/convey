@@ -11,8 +11,9 @@ import androidx.compose.ui.graphics.Color
  * its presence, carry a declared motion meaning, and respect visual hierarchy.
  *
  * Without [ConveySystem], Convey composables still render — they use [ConveyGrammar.Default]
- * and skip enforcement. With [ConveySystem], the contract is active. Violations surface
- * as errors in debug builds and as logged warnings in release builds.
+ * and skip enforcement. With [ConveySystem], the contract is active. How a violation surfaces
+ * depends on [onViolation] and, when that is not supplied, on the platform — see
+ * [defaultViolationHandler].
  *
  * The system intentionally does not provide colors or typography. Those belong to your
  * product's design system. [ConveySystem] provides the behavioral contract, not the skin.
@@ -32,13 +33,16 @@ import androidx.compose.ui.graphics.Color
  * ```
  *
  * @param grammar The motion vocabulary for this surface. Every animation inside must use
- *   a declared meaning. Undeclared meanings throw in debug builds.
+ *   a declared meaning. Undeclared meanings always throw (see [ConveyGrammar.get]) — on every
+ *   platform and every build type, independently of [onViolation].
  * @param maxPrimaryWeight The maximum number of [ConveyWeight.Primary] elements allowed
  *   on screen simultaneously. Defaults to 3. Raise only with good reason.
  * @param enforceHierarchy Whether to actively enforce [ConveyWeight] rules. Disable
  *   only during migration. Do not disable permanently.
- * @param onViolation Called when a hierarchy or grammar violation is detected.
- *   Defaults to throwing in debug, logging in release.
+ * @param onViolation Called when a hierarchy violation is detected. Provided as
+ *   [LocalConveyViolationHandler], which [conveyWeight] reads and threads into
+ *   [ConveyWeightRegistry.register] — so a lambda supplied here really is what fires.
+ *   Defaults to [defaultViolationHandler].
  */
 @Composable
 fun ConveySystem(
@@ -74,6 +78,17 @@ val LocalConveyViolationHandler: ProvidableCompositionLocal<(String) -> Unit> =
 
 // ── Violation handling ────────────────────────────────────────────────────────
 
+/**
+ * The platform's fallback violation handler, used when no `onViolation` is supplied.
+ *
+ * **This is deliberately asymmetric across targets, because the platforms are.** Android has a
+ * real, generated debug/release signal (`BuildConfig.DEBUG`), so it throws
+ * [ConveyViolationException] in a debug build and logs a warning in release. JVM desktop,
+ * wasmJs and iOS have no equivalent reliable release-mode flag, so they always throw: a
+ * violation is a design error, and silently printing it to a stream nobody reads is how it
+ * survives to ship. A consumer who genuinely wants the logging behaviour on those targets
+ * passes their own `ConveySystem(onViolation = ...)`, which is the supported opt-out.
+ */
 internal expect fun defaultViolationHandler(): (String) -> Unit
 
 /**

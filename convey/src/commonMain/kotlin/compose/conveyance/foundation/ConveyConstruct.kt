@@ -33,6 +33,9 @@ import compose.conveyance.conveyWeight
  * }
  * ```
  *
+ * A blank [purpose] is reported straight to [LocalConveyViolationHandler] at composition time,
+ * rather than waiting for an audit nobody may run.
+ *
  * Elements without a declared purpose are flagged in audit output.
  * Elements that declare a purpose but receive zero interactions are flagged separately —
  * they exist but are never reached. That is a design failure, not a code failure.
@@ -53,6 +56,18 @@ fun ConveyConstruct(
 ) {
     val violationHandler = LocalConveyViolationHandler.current
     val registry = LocalConveyConstructRegistry.current
+
+    // The whole point of this composable is that the purpose is stated. A blank one is an
+    // element that declares nothing while claiming to declare something -- worse than not
+    // wrapping it at all, because the audit will count it as accounted for.
+    if (purpose.isBlank()) {
+        violationHandler(
+            "CONVEY CONSTRUCT VIOLATION: ConveyConstruct declared with a blank purpose.\n" +
+                "Name what this element does, as a verb phrase (\"Submits the form.\"), or drop " +
+                "the ConveyConstruct wrapper. A blank purpose passes the audit while answering " +
+                "nothing."
+        )
+    }
 
     DisposableEffect(purpose) {
         val entry = ConstructEntry(purpose = purpose, weight = weight, produces = produces)
