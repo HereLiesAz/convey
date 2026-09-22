@@ -12,7 +12,9 @@ import androidx.compose.ui.platform.debugInspectorInfo
  * Color alone can't enforce hierarchy — a developer can paint everything Primary.
  * Weight makes the hierarchy structural.
  *
- * Rules enforced at runtime (debug builds):
+ * Rules enforced at runtime (see [defaultViolationHandler] for the per-platform behaviour:
+ * Android differentiates debug from release via `BuildConfig.DEBUG`; every other target always
+ * enforces, because none of them expose a reliable release-mode signal):
  *   - [Hero]: Only one per ConveySystem scope. This IS the product's defining moment.
  *             A screen with two heroes has no hero. The system will tell you.
  *   - [Primary]: Strongly interactive. Limited to [ConveySystem.maxPrimary] per scope.
@@ -47,6 +49,16 @@ enum class ConveyWeight {
      * Present but inert. Explicitly declared as non-interactive or decorative.
      * This is not laziness — it is honesty. Ghost elements that behave like Primary
      * elements are the source of the "construction zone" problem.
+     *
+     * **Name collision, deliberately not renamed.** This is *not* the Conveyance Manifesto's
+     * "Ghost" — the destruction-residue/undo concept, where a destroyed item collapses to a
+     * reversible trace in place instead of raising a confirm dialog. That idea is implemented
+     * separately in this library as [compose.conveyance.foundation.ConveyReversal], named
+     * differently precisely because this enum entry already claimed the word. The two are
+     * unrelated and differently scoped: this one is a visual-hierarchy tier (how loudly an
+     * element speaks), the manifesto's is a lifecycle state (what a deleted thing leaves
+     * behind). Renaming this entry would be a source-incompatible API break, so the
+     * disambiguation lives here instead.
      */
     Ghost,
 }
@@ -54,8 +66,10 @@ enum class ConveyWeight {
 /**
  * Registers this composable's weight in the ambient [ConveyWeightRegistry].
  *
- * In debug builds, this modifier validates hierarchy constraints on every composition.
- * In release builds, it is a no-op — the enforcement cost is zero in production.
+ * This modifier validates hierarchy constraints on every composition. A violation is reported
+ * through [LocalConveyViolationHandler] — which is whatever `ConveySystem(onViolation = ...)`
+ * was given, or [defaultViolationHandler] when nothing was provided. On Android that default is
+ * a no-op cost in release builds (it logs); on every other target it always throws.
  *
  * ```kotlin
  * Button(
@@ -73,10 +87,13 @@ fun Modifier.conveyWeight(weight: ConveyWeight): Modifier = composed(
     }
 ) {
     val registry = LocalConveyWeightRegistry.current
+    // Read in composition, where the CompositionLocal is actually resolvable, and thread it into
+    // the registry: `register` runs inside a DisposableEffect, which is not a composable context.
+    val onViolation = LocalConveyViolationHandler.current
     val id = remember { Any() }
 
-    DisposableEffect(weight) {
-        registry.register(id, weight)
+    DisposableEffect(weight, onViolation) {
+        registry.register(id, weight, onViolation)
         onDispose { registry.unregister(id) }
     }
 
@@ -85,7 +102,10 @@ fun Modifier.conveyWeight(weight: ConveyWeight): Modifier = composed(
 
 /**
  * Tracks all [ConveyWeight] registrations within a [ConveySystem] scope.
- * Enforces hierarchy constraints in debug builds.
+ *
+ * Enforces hierarchy constraints, reporting through the handler
+ * [Modifier.conveyWeight] hands it (see [register]) — `ConveySystem(onViolation = ...)`'s
+ * lambda when one was supplied, otherwise [defaultViolationHandler].
  */
 @Stable
 class ConveyWeightRegistry(
@@ -94,9 +114,19 @@ class ConveyWeightRegistry(
 ) {
     private val registry = mutableStateMapOf<Any, ConveyWeight>()
 
-    internal fun register(id: Any, weight: ConveyWeight) {
+    /**
+     * @param onViolation where a constraint violation is reported. [Modifier.conveyWeight] passes
+     *   [LocalConveyViolationHandler]'s current value, which is what makes
+     *   `ConveySystem(onViolation = ...)` actually fire. `null` falls back to the platform default
+     *   ([conveyViolation]).
+     */
+    internal fun register(
+        id: Any,
+        weight: ConveyWeight,
+        onViolation: ((String) -> Unit)? = null,
+    ) {
         registry[id] = weight
-        if (enforceInDebug) validate()
+        if (enforceInDebug) validate(onViolation)
     }
 
     internal fun unregister(id: Any) {
@@ -108,16 +138,17 @@ class ConveyWeightRegistry(
     val secondaryCount: Int get() = registry.values.count { it == ConveyWeight.Secondary }
     val ghostCount: Int get() = registry.values.count { it == ConveyWeight.Ghost }
 
-    private fun validate() {
+    private fun validate(onViolation: ((String) -> Unit)?) {
+        val report: (String) -> Unit = onViolation ?: { conveyViolation(it) }
         if (heroCount > 1) {
-            conveyViolation(
+            report(
                 "CONVEY HIERARCHY VIOLATION: $heroCount Hero elements on one surface.\n" +
                 "A surface with multiple heroes has no hero. Demote all but one to Primary.\n" +
                 "The hero is the answer to: 'What is the single most important thing here?'"
             )
         }
         if (primaryCount > maxPrimary) {
-            conveyViolation(
+            report(
                 "CONVEY HIERARCHY VIOLATION: $primaryCount Primary elements (max $maxPrimary).\n" +
                 "When everything is primary, nothing is primary. Demote some to Secondary.\n" +
                 "Ask: which actions advance the user's goal? Those are Primary. Others are Secondary."

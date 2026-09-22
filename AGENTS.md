@@ -60,7 +60,17 @@ map and public-API-level detail):
 - `ConveyGrammar` — the motion vocabulary contract (`ConveyMeaning` → `AnimationSpec`); every
   other composable's motion is driven through this, not a raw spec.
 - `ConveyWeight` — visual-hierarchy enforcement (Hero/Primary/Secondary/Ghost) with a registry
-  that throws in debug builds on a violated constraint (e.g. two Heroes).
+  that reports a violated constraint (e.g. two Heroes) through `ConveySystem(onViolation = ...)`,
+  or, when none is supplied, through `defaultViolationHandler()`. That default is deliberately
+  **asymmetric across targets**, because the targets are: Android has a real debug/release signal
+  (`BuildConfig.DEBUG`) and throws `ConveyViolationException` in debug while logging in release;
+  JVM desktop, wasmJs and iOS have no equivalent reliable release-mode flag and therefore always
+  throw. Passing an `onViolation` is the supported way to get logging on those targets. Note also
+  that `ConveyGrammar`'s own fail-fast on an undeclared meaning is a plain unconditional
+  `error(...)` — it throws everywhere, in every build type, and does not route through the
+  violation handler at all. `ConveyWeight.Ghost` is a decorative/inert hierarchy tier and is
+  unrelated to the manifesto's own "Ghost" undo-residue idea (implemented here as
+  `ConveyReversal`); see that enum entry's own doc comment.
 - `ConveyEmployment` — Law 4 enforcement: every element declares at least 4 of the 11 `ConveyJob`s
   or is explicitly `ambient` (budgeted per surface), via the same registry pattern as `ConveyWeight`.
 - `ConveyPractice` — practice-decay (§6.3): `ConveyPracticeRegistry` counts an element's genuine
