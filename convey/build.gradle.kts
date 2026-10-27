@@ -30,9 +30,8 @@ abstract class DokkaMarkdownPlugin : DokkaFormatPlugin(formatName = "markdown") 
 apply<DokkaMarkdownPlugin>()
 
 group = "compose.conveyance"
-// Overridable via -PconveyVersion=<value> so CI can publish under the commit's own short SHA
-// (see .github/workflows/publish-packages.yml) without editing this file per release --
-// "1.0.0" only ever applies to a local, uninstalled build.
+// Overridable via -PconveyVersion=<value>: JitPack passes its $VERSION (see jitpack.yml), CI its
+// short SHA (see .github/workflows/publish-packages.yml). "1.0.0" only applies to a local build.
 version = (findProperty("conveyVersion") as String?) ?: "1.0.0"
 
 kotlin {
@@ -166,7 +165,7 @@ publishing {
         }
     }
 
-    // GitHub Packages, not JitPack: JitPack's coordinate-relocation step rewrites Gradle
+    // GitHub Packages, alongside JitPack (see jitpack.yml): JitPack's coordinate-relocation step rewrites Gradle
     // Module Metadata's `files[].url` for a classified artifact (this module's wasmJs
     // Compose-resources zip, published as `<artifact>-<version>-kotlin_resources.kotlin_resources.zip`)
     // down to a generic `<artifact>-<version>.zip` that doesn't actually exist -- Gradle trusts

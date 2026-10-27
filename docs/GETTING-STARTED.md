@@ -41,6 +41,28 @@ dependencies {
 }
 ```
 
+or from [JitPack](https://jitpack.io/#HereLiesAz/convey), with no clone at all:
+
+```kotlin
+// your app's settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+}
+
+// your app's build.gradle.kts
+dependencies {
+    implementation("com.github.HereLiesAz.convey:convey:<tag>") // or main-SNAPSHOT
+}
+```
+
+JitPack serves Android and desktop fully. A wasmJs consumer resolving from JitPack does not
+receive the library's bundled Compose resources (JitPack rewrites that artifact's metadata URL);
+use `includeBuild` or GitHub Packages for wasmJs.
+
 ## The root: `ConveySystem`
 
 Every Convey surface starts here. Without it, composables still render — they fall back to
