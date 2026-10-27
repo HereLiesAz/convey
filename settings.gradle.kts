@@ -25,6 +25,10 @@ dependencyResolutionManagement {
 }
 
 include(":convey")
-include(":dev-app")
-include(":android-dev-app")
-include(":hotswap")
+// Dev-loop modules are never published. JitPack sets JITPACK=true; skipping them there keeps the
+// publishing build from configuring an application module and the Hot Reload plugin it never uses.
+if (System.getenv("JITPACK") == null) {
+    include(":dev-app")
+    include(":android-dev-app")
+    include(":hotswap")
+}

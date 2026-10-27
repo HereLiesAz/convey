@@ -1,46 +1,25 @@
+# JDK 21: what this build (and CI) requires.
 jdk:
-  - openjdk17
+  - openjdk21
 
-# JitPack's default build (no jitpack.yml) attempts to publish every
-# target in this multi-target KMP module, including androidTarget --
-# which fails outright without an Android SDK on JitPack's own runner,
-# the same way it does in any environment without one configured. That
-# failure doesn't just fail the Android artifact: it aborts the whole
-# publish task graph before later tasks -- including the wasmJs target's
-# Compose Multiplatform resources artifact (the `-kotlin_resources.zip`
-# classifier a consumer's runtime font/image loading actually needs, not
-# just the compiled .klib) -- ever run, so a consumer resolving this
-# module from JitPack gets working Kotlin code and a missing resource at
-# runtime, with no compile-time signal that anything is wrong.
+# androidTarget compiles against platform 35. Install it with the image's own sdkmanager,
+# accepting licenses non-interactively; AGP's missing-platform auto-download is the fallback.
+before_install:
+  - |
+    SDKM=$(command -v sdkmanager || ls "${ANDROID_HOME:-/opt/android-sdk-linux}"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -n1)
+    if [ -n "$SDKM" ]; then
+      yes | "$SDKM" --licenses > /dev/null || true
+      "$SDKM" "platforms;android-35" "build-tools;35.0.0" || true
+    fi
+
+# Publishes every target buildable on Linux (root KMP module, android, desktop, wasmJs; iOS is
+# skipped via kotlin.native.ignoreDisabledTargets). settings.gradle.kts leaves the dev modules out
+# when JITPACK is set, so nothing but :convey is configured here. $VERSION is the tag/commit
+# JitPack is building.
 #
-# Publishing only the wasmJs target's own Maven publication sidesteps
-# the Android SDK requirement entirely and reliably produces every
-# artifact (.klib, .pom, .module, sources jar, and the resources zip)
-# a wasmJs consumer needs. Verified locally: `./gradlew
-# :convey:publishWasmJsPublicationToMavenLocal` produces
-# `convey-wasm-js-<version>-kotlin_resources.kotlin_resources.zip`
-# alongside the .klib; the default multi-target `publishToMavenLocal`
-# does not, for exactly the reason above.
-#
-# `publishWasmJsPublicationToMavenLocal` alone was still an incomplete
-# fix: it only writes the `convey-wasm-js` artifact, never the *root*
-# `convey` Maven module (Kotlin Multiplatform's `kotlinMultiplatform`
-# publication) -- the one a consumer's plain `com.github.<owner>.convey:
-# convey:<version>` coordinate (no `-wasm-js` suffix) actually resolves
-# against, with Gradle Module Metadata's `available-at` pointing at
-# `convey-wasm-js` as the real per-target variant. Without it, every
-# commit built under this jitpack.yml 404s on that root .pom -- verified
-# directly: `com/github/<owner>/convey/convey/<version>/convey-<version>.pom`
-# never existed for any commit built this way, only for commits built
-# before this file existed (whose default multi-target build happened to
-# run the `kotlinMultiplatform` publish task too, before the doomed
-# Android task ran). Publishing both, as below, produces the root
-# `convey` module (with its `available-at` pointer) *and*
-# `convey-wasm-js` (with the resources zip) side by side -- verified
-# locally: both `compose/conveyance/convey/<version>/convey-<version>.pom`
-# and `compose/conveyance/convey-wasm-js/<version>/...` exist afterward,
-# and the root module's `.module` file's `wasmJsApiElements-published`/
-# `wasmJsResourcesElements-published` variants both point at
-# `convey-wasm-js`, matching what a `wasmJs`-target consumer resolves.
+# Known JitPack limitation: its coordinate relocation rewrites the wasmJs Compose-resources zip's
+# classified file URL in Gradle Module Metadata, so a wasmJs consumer resolving from JitPack does
+# not receive this library's bundled resources (e.g. the Azrienoch font). Android and desktop
+# package resources inside the AAR/JAR and are unaffected.
 install:
-  - ./gradlew :convey:publishKotlinMultiplatformPublicationToMavenLocal :convey:publishWasmJsPublicationToMavenLocal --no-daemon --stacktrace
+  - ./gradlew :convey:publishToMavenLocal -PconveyVersion=$VERSION -x test --no-daemon --stacktrace
