@@ -5,12 +5,9 @@
 # That's an Android Gradle Plugin constraint specifically -- it doesn't bound the Kotlin/Compose
 # Multiplatform version, which the Kotlin Gradle Plugin negotiates independently of AGP.
 agp = "8.13.2"
-# Kotlin/Compose here match Conveyance's own already-proven pin (kotlin=2.4.10, compose=1.12.0)
-# rather than the Compose Hot Reload plugin's bare minimum (2.1.20/1.8.2), per JetBrains' own
-# compatibility guidance for a project (like this one) that also targets iOS and wasmJs: "upgrade
-# to Kotlin 2.2.20[+] for projects targeting platforms with rapidly evolving support, such as iOS
-# and web." Verified this pairing keeps building for real on all of android/desktop/iOS/wasmJs
-# before landing it -- see convey/build.gradle.kts's own comment on the Hot Reload plugin.
+# Kotlin/Compose are pinned at the Compose Hot Reload plugin's minimum (2.1.20/1.8.2). This is
+# behind Conveyance's own pin (Kotlin 2.4.x, Compose 1.12.x); bumping is pending and would also let
+# ConveyExpressiveShape's graphics-shapes dependency link on wasmJs (see AGENTS.md).
 kotlin = "2.1.20"
 compose = "1.8.2"
 composeHotReload = "1.1.1"
