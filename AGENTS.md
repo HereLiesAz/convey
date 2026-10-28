@@ -277,3 +277,8 @@ not a hand-curated word list), what's an honest approximation and why, and what'
 of scope and why it can't be built here. When touching the code those sections describe, check
 the claims against the current source before leaving them — they drift like any other doc, and
 this repo's convention is to keep them honest rather than aspirational.
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
